@@ -20,7 +20,7 @@ public class StaffController : ControllerBase
 
 
 
-    [Authorize(Policy = "AdminOnly")]
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> Staff(Guid id)
     {
@@ -33,7 +33,7 @@ public class StaffController : ControllerBase
 
 
 
-    [Authorize(Policy = "AdminOnly")]
+    
     [HttpGet("Staffs")]
     public async Task<IActionResult> Staffs([FromQuery] PaginationParameters paginationParameters, [FromQuery] string? onFilter, [FromQuery] string? onPosition)
     {
