@@ -1,6 +1,7 @@
 using Global.Infrastructure.Exceptions.PersonalAccount;
 using Microsoft.EntityFrameworkCore;
 using PersonalAccount.API.Data.DbContexts;
+using PersonalAccount.API.Data.Dtos.Staffs;
 using PersonalAccount.API.Models.Dtos;
 using PersonalAccount.API.Models.Dtos.Clients;
 using PersonalAccount.API.Models.Dtos.Responses;
@@ -222,4 +223,72 @@ public class StaffService : IStaffService
             throw;
         }
     }
+
+
+    public async Task<Response<List<StaffSummaryDto>>> GetAllStaffSortedByExperience()
+    {
+        try
+        {
+            var staffList = await _agileDbContext.Staff
+                .Include(s => s.User)
+                .Include(s => s.MyManageProjects)
+                .Include(s => s.ProjectUsers)
+                .ThenInclude(pu => pu.Project)
+                .Include(s => s.StaffImages)
+                .ToListAsync();
+
+            var staffSummaries = staffList
+                .Select(s =>
+                {
+                    var (completedProjectsCount, totalClientsCount) = CalculateCompletedProjectsAndClients(s);
+                    return new StaffSummaryDto
+                    {
+                        FirstName = s.User.Name,
+                        LastName = s.User.Surname,
+                        Position = s.User.Position,
+                        Experience = s.Experience,
+                        CombinedImage = s.StaffImages?.FirstOrDefault()?.CombinedImage ?? null, 
+                        TotalCompletedProjectsCount = completedProjectsCount,
+                        TotalClientsInCompletedProjects = totalClientsCount
+                    };
+                })
+                .OrderByDescending(s => s.Experience)  
+                .ToList();
+
+            return new Response<List<StaffSummaryDto>>("Success", staffSummaries);
+        }
+        catch (Exception ex)
+        {
+
+            return new Response<List<StaffSummaryDto>>($"Failed to retrieve staff data: {ex.Message}");
+        }
+    }
+
+    private (int completedProjectsCount, int totalClientsCount)
+        CalculateCompletedProjectsAndClients(Staff staff)
+    {
+        var completedProjectsCount = 0;
+        var totalClientsCount = 0;
+
+        if (staff.MyManageProjects != null)
+        {
+            foreach (var project in staff.MyManageProjects.Where(p => p.IsCompleted))
+            {
+                completedProjectsCount++;
+                totalClientsCount += project.ProjectUsers.Count(pu => pu.Client != null);
+            }
+        }
+
+        if (staff.ProjectUsers != null)
+        {
+            foreach (var projectUser in staff.ProjectUsers.Where(pu => pu.Project.IsCompleted))
+            {
+                completedProjectsCount++;
+                totalClientsCount += projectUser.Project.ProjectUsers.Count(p => p.Client != null);
+            }
+        }
+
+        return (completedProjectsCount, totalClientsCount);
+    }
+
 }
