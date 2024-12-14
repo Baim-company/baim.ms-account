@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PersonalAccount.API.Data.Dtos.Staffs;
 using PersonalAccount.API.Models.Dtos;
 using PersonalAccount.API.Models.Dtos.Clients;
+using PersonalAccount.API.Models.Dtos.Responses;
 using PersonalAccount.API.Models.Dtos.Staffs;
 using PersonalAccount.API.Services.Abstractions;
 
@@ -42,6 +44,21 @@ public class StaffController : ControllerBase
         return Ok(staffs);
     }
 
+
+    [HttpGet("StaffSummary")]
+    public async Task<ActionResult<Response<List<StaffSummaryDto>>>> GetAllStaff()
+    {
+        
+            var staff = await _staffService.GetAllStaffSortedByExperience();
+
+            if (staff.Data == null)
+            {
+                staff.Data = new List<StaffSummaryDto>(); 
+            }
+
+            return Ok(staff); 
+        
+    }
 
 
     [Authorize(Policy = "AdminOnly")]

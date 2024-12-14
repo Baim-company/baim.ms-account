@@ -1,3 +1,4 @@
+using PersonalAccount.API.Data.Dtos.Staffs;
 using PersonalAccount.API.Models.Dtos;
 using PersonalAccount.API.Models.Dtos.Clients;
 using PersonalAccount.API.Models.Dtos.Responses;
@@ -16,4 +17,6 @@ public interface IStaffService
     public Task<Response<Staff>> SetStaffExperienceAsync(Guid id, ushort experience);
     public Task<Response<Staff>> SetIsWorkingOrDismissedAsync(Guid id);
     Task<Response<Staff>> ChangePositionAsync(UpdatePosition updatePosition);
+    Task<Response<List<StaffSummaryDto>>> GetAllStaffSortedByExperience();
+
 }
