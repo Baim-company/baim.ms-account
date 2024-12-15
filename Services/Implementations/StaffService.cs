@@ -231,6 +231,7 @@ public class StaffService : IStaffService
         {
             var staffList = await _agileDbContext.Staff
                 .Include(s => s.User)
+                .Where(s => s.User.Email != "admin@gmail.com") 
                 .Include(s => s.MyManageProjects)
                 .Include(s => s.ProjectUsers)
                 .ThenInclude(pu => pu.Project)
@@ -243,26 +244,27 @@ public class StaffService : IStaffService
                     var (completedProjectsCount, totalClientsCount) = CalculateCompletedProjectsAndClients(s);
                     return new StaffSummaryDto
                     {
+                        Id = s.Id,
                         FirstName = s.User.Name,
                         LastName = s.User.Surname,
                         Position = s.User.Position,
                         Experience = s.Experience,
-                        CombinedImage = s.StaffImages?.FirstOrDefault()?.CombinedImage ?? null, 
+                        CombinedImage = s.StaffImages?.FirstOrDefault()?.CombinedImage ?? null,
                         TotalCompletedProjectsCount = completedProjectsCount,
                         TotalClientsInCompletedProjects = totalClientsCount
                     };
                 })
-                .OrderByDescending(s => s.Experience)  
+                .OrderByDescending(s => s.Experience)
                 .ToList();
 
             return new Response<List<StaffSummaryDto>>("Success", staffSummaries);
         }
         catch (Exception ex)
         {
-
             return new Response<List<StaffSummaryDto>>($"Failed to retrieve staff data: {ex.Message}");
         }
     }
+
 
     private (int completedProjectsCount, int totalClientsCount)
         CalculateCompletedProjectsAndClients(Staff staff)
