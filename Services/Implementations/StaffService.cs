@@ -6,6 +6,7 @@ using PersonalAccount.API.Models.Dtos;
 using PersonalAccount.API.Models.Dtos.Clients;
 using PersonalAccount.API.Models.Dtos.Responses;
 using PersonalAccount.API.Models.Dtos.Staffs;
+using PersonalAccount.API.Models.Entities.Agiles.Projects;
 using PersonalAccount.API.Models.Entities.Staffs;
 using PersonalAccount.API.Models.Entities.Users;
 using PersonalAccount.API.Services.Abstractions;
@@ -264,7 +265,6 @@ public class StaffService : IStaffService
             return new Response<List<StaffSummaryDto>>($"Failed to retrieve staff data: {ex.Message}");
         }
     }
-
     public async Task<Response<StaffDetailsDto>> GetStaffDetailsByIdAsync(Guid staffId)
     {
         try
@@ -273,54 +273,71 @@ public class StaffService : IStaffService
                 .Include(s => s.User)
                 .Include(s => s.StaffImages.Where(img => img.IsPageImage))
                 .Include(s => s.MyManageProjects)
-                    .ThenInclude(p => p.ProjectUsers)
-                    .ThenInclude(pu => pu.Client)
-                .Include(s => s.MyManageProjects)
+                    .ThenInclude(p => p.Company)
+                .Include(s => s.ProjectUsers)
+                    .ThenInclude(pu => pu.Project)
                     .ThenInclude(p => p.Company)
                 .Include(s => s.Certificates)
                 .Where(s => !s.IsDismissed && s.Id == staffId)
                 .FirstOrDefaultAsync();
 
-            if (staff == null)
+            if (staff == null || staff.User == null)
             {
                 return new Response<StaffDetailsDto>("Staff not found.");
             }
 
+            var managedProjects = staff.MyManageProjects?
+                .Where(p => p != null && p.IsCompleted && p.IsPublic)
+                .ToList() ?? new List<Project>();
+
+            var participatedProjects = staff.ProjectUsers?
+                .Where(pu => pu.Project != null && pu.Project.IsCompleted && pu.Project.IsPublic)
+                .Select(pu => pu.Project)
+                .ToList() ?? new List<Project>();
+
+            var allProjects = managedProjects
+                .Concat(participatedProjects)
+                .Distinct()
+                .ToList();
+
+            var completedProjectsCount = allProjects.Count;
+            var totalClientsCount = allProjects
+                .Sum(p => p.ProjectUsers?.Count(pu => pu.Client != null) ?? 0);
+
             var staffDetails = new StaffDetailsDto
             {
                 Id = staff.Id,
-                Name = staff.User.Name,
-                Surname = staff.User.Surname,
-                Position = staff.User.Position,
+                Name = staff.User.Name ?? "N/A",
+                Surname = staff.User.Surname ?? "N/A",
+                Position = staff.User.Position ?? "N/A",
                 Experience = staff.Experience,
 
-                CombinedImages = staff.StaffImages
+                CombinedImages = staff.StaffImages?
                     .Where(img => img.IsPageImage)
-                    .Select(img => img.CombinedImage)
-                    .ToList(),
-                CompletedProjectsCount = staff.MyManageProjects.Count(p => p.IsCompleted),
-                ClientsInCompletedProjectsCount = staff.MyManageProjects
-                    .Where(p => p.IsCompleted)
-                    .Sum(p => p.ProjectUsers.Count(pu => pu.Client != null)),
-                Projects = staff.MyManageProjects
-                    .Where(p => p.IsCompleted && p.IsPublic)
-                    .Select(p => new ProjectDetailsDto
-                    {
-                        Name = p.Name,
-                        Description = p.Description,
-                        CompanyName = p.Company.CompanyName,
-                        CompanyImage = p.Company.CombinedImage
-                    }).ToList(),
-                Sertificates = staff.Certificates
+                    .Select(img => img.CombinedImage ?? string.Empty)
+                    .ToList() ?? new List<string>(),
+
+                CompletedProjectsCount = completedProjectsCount,
+                ClientsInCompletedProjectsCount = totalClientsCount,
+
+                Projects = allProjects.Select(p => new ProjectDetailsDto
+                {
+                    Name = p.Name ?? "No Name",
+                    Description = p.Description ?? "No Description",
+                    CompanyName = p.Company?.CompanyName ?? "Unknown Company",
+                    CompanyImage = p.Company?.CombinedImage ?? string.Empty
+                }).ToList(),
+
+                Sertificates = staff.Certificates?
                     .Select(c => new CertificateDetailsDto
                     {
-                        Name = c.Name,
-                        Authority = c.Authority,
+                        Name = c.Name ?? "No Name",
+                        Authority = c.Authority ?? "Unknown Authority",
                         GivenTime = c.GivenTime,
                         Deadline = c.Deadline,
-                        Link = c.Link,
-                        CombinedImage = c.CombinedImage
-                    }).ToList()
+                        Link = c.Link ?? string.Empty,
+                        CombinedImage = c.CombinedImage ?? string.Empty
+                    }).ToList() ?? new List<CertificateDetailsDto>()
             };
 
             return new Response<StaffDetailsDto>("Success", staffDetails);
@@ -331,6 +348,7 @@ public class StaffService : IStaffService
         }
     }
 
+
     private (int completedProjectsCount, int totalClientsCount)
         CalculateCompletedProjectsAndClients(Staff staff)
     {
@@ -339,7 +357,7 @@ public class StaffService : IStaffService
 
         if (staff.MyManageProjects != null)
         {
-            foreach (var project in staff.MyManageProjects.Where(p => p.IsCompleted))
+            foreach (var project in staff.MyManageProjects.Where(p => p.IsCompleted  && p.IsPublic))
             {
                 completedProjectsCount++;
                 totalClientsCount += project.ProjectUsers.Count(pu => pu.Client != null);
@@ -348,7 +366,7 @@ public class StaffService : IStaffService
 
         if (staff.ProjectUsers != null)
         {
-            foreach (var projectUser in staff.ProjectUsers.Where(pu => pu.Project.IsCompleted))
+            foreach (var projectUser in staff.ProjectUsers.Where(pu => pu.Project.IsCompleted && pu.Project.IsPublic))
             {
                 completedProjectsCount++;
                 totalClientsCount += projectUser.Project.ProjectUsers.Count(p => p.Client != null);
