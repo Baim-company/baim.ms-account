@@ -231,7 +231,7 @@ public class StaffService : IStaffService
         {
             var staffList = await _agileDbContext.Staff
                 .Include(s => s.User)
-                .Where(s => s.User.Email != "admin@gmail.com") 
+                .Where(s => s.User.Email != "admin@gmail.com" && !s.IsDismissed) 
                 .Include(s => s.MyManageProjects)
                 .Include(s => s.ProjectUsers)
                 .ThenInclude(pu => pu.Project)
@@ -265,6 +265,71 @@ public class StaffService : IStaffService
         }
     }
 
+    public async Task<Response<StaffDetailsDto>> GetStaffDetailsByIdAsync(Guid staffId)
+    {
+        try
+        {
+            var staff = await _agileDbContext.Staff
+                .Include(s => s.User)
+                .Include(s => s.StaffImages.Where(img => img.IsPageImage))
+                .Include(s => s.MyManageProjects)
+                    .ThenInclude(p => p.ProjectUsers)
+                    .ThenInclude(pu => pu.Client)
+                .Include(s => s.MyManageProjects)
+                    .ThenInclude(p => p.Company)
+                .Include(s => s.Certificates)
+                .Where(s => !s.IsDismissed && s.Id == staffId)
+                .FirstOrDefaultAsync();
+
+            if (staff == null)
+            {
+                return new Response<StaffDetailsDto>("Staff not found.");
+            }
+
+            var staffDetails = new StaffDetailsDto
+            {
+                Id = staff.Id,
+                Name = staff.User.Name,
+                Surname = staff.User.Surname,
+                Position = staff.User.Position,
+                Experience = staff.Experience,
+
+                CombinedImages = staff.StaffImages
+                    .Where(img => img.IsPageImage)
+                    .Select(img => img.CombinedImage)
+                    .ToList(),
+                CompletedProjectsCount = staff.MyManageProjects.Count(p => p.IsCompleted),
+                ClientsInCompletedProjectsCount = staff.MyManageProjects
+                    .Where(p => p.IsCompleted)
+                    .Sum(p => p.ProjectUsers.Count(pu => pu.Client != null)),
+                Projects = staff.MyManageProjects
+                    .Where(p => p.IsCompleted && p.IsPublic)
+                    .Select(p => new ProjectDetailsDto
+                    {
+                        Name = p.Name,
+                        Description = p.Description,
+                        CompanyName = p.Company.CompanyName,
+                        CompanyImage = p.Company.CombinedImage
+                    }).ToList(),
+                Sertificates = staff.Certificates
+                    .Select(c => new CertificateDetailsDto
+                    {
+                        Name = c.Name,
+                        Authority = c.Authority,
+                        GivenTime = c.GivenTime,
+                        Deadline = c.Deadline,
+                        Link = c.Link,
+                        CombinedImage = c.CombinedImage
+                    }).ToList()
+            };
+
+            return new Response<StaffDetailsDto>("Success", staffDetails);
+        }
+        catch (Exception ex)
+        {
+            return new Response<StaffDetailsDto>($"Failed to retrieve staff details: {ex.Message}");
+        }
+    }
 
     private (int completedProjectsCount, int totalClientsCount)
         CalculateCompletedProjectsAndClients(Staff staff)
