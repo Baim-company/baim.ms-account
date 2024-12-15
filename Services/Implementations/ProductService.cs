@@ -25,7 +25,7 @@ public class ProductService : IProductService
             var productExist = await _baimDbContext.Products
                 .FirstOrDefaultAsync(n => n.Name == model.Name && n.ProductType == model.ProductType);
              
-            if (productExist == null) 
+            if (productExist != null) 
                 throw new PersonalAccountException(PersonalAccountErrorType.ProductNotFound, "Product with this name and product type already exist!");
 
             var newProduct = new Product(model);
