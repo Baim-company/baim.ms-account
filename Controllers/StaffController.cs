@@ -61,6 +61,16 @@ public class StaffController : ControllerBase
     }
 
 
+    [HttpGet("StaffDetails")]
+    public async Task<IActionResult> StaffDetails(Guid id)
+    {
+
+            var staffDetails = await _staffService.GetStaffDetailsByIdAsync(id);
+            return Ok(staffDetails);
+        
+    }
+
+
     [Authorize(Policy = "AdminOnly")]
     [HttpPost("Create")]
     public async Task<IActionResult> Create([FromBody] ExternalUserDto externalUserDto)
