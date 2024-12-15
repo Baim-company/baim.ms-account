@@ -18,7 +18,7 @@ public interface IStaffService
     public Task<Response<Staff>> SetIsWorkingOrDismissedAsync(Guid id);
     Task<Response<Staff>> ChangePositionAsync(UpdatePosition updatePosition);
     Task<Response<List<StaffSummaryDto>>> GetAllStaffSortedByExperience();
-    Task<Response<StaffDetailsDto>> GetStaffDetailsByIdAsync(Guid staffId)
+    Task<Response<StaffDetailsDto>> GetStaffDetailsByIdAsync(Guid staffId);
 
 
 }
