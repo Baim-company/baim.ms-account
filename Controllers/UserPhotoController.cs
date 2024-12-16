@@ -29,7 +29,7 @@ public class UserPhotoController : ControllerBase
     {
         var result = await _userPhotoService.GetFileByUserIdAsync(userId);
         if (result.Data == null)
-            return BadRequest(result.Message);
+            return NotFound(result.Message);
 
         var file = result.Data;
         return File(file.FileContent, file.ContentType, file.FileName);

@@ -25,7 +25,7 @@ public class FileController : ControllerBase
 
 
     [HttpGet("Name/{fileName}")]
-    public async Task<ActionResult<FileContentResult>> GetFile(string fileName)
+    public async Task<IActionResult> GetFile(string fileName)
     {
         var result = await _fileService.GetFileByNameAsync(fileName);
         if (result.Data == null) return NotFound(result.Message);

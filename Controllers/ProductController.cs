@@ -22,7 +22,7 @@ public class ProductController : ControllerBase
     {
         var result = await _productService.GetProductByIdAsync(id);
 
-        if (result.Data == null) return BadRequest(result.Message);
+        if (result.Data == null) return NotFound(result.Message);
 
         return Ok(result.Data);
     }
@@ -37,7 +37,7 @@ public class ProductController : ControllerBase
     {
         var products = await _productService.GetFilteredProductsAsync(onSearch, onFilter);
 
-        if (products == null) return BadRequest($"There are no products");
+        if (products == null) return NotFound($"There are no products");
 
         return Ok(products);
     }

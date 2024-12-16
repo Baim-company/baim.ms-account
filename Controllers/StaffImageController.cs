@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PersonalAccount.API.Models.Dtos.Staffs;
 using PersonalAccount.API.Services.Abstractions;
 
 namespace PersonalAccount.API.Controllers;
+
 [ApiController]
+//[Authorize(Policy = "StaffOnly")]
 [Route("[controller]")]
 public class StaffImageController : ControllerBase
 {
@@ -15,7 +16,6 @@ public class StaffImageController : ControllerBase
     }
 
 
-    //[Authorize(Policy = "StaffOnly")]
     [HttpPost("Add")]
     public async Task<IActionResult> Add([FromHeader] Guid staffId, [FromBody] List<ImageModel> imageModels)
     {
@@ -27,7 +27,6 @@ public class StaffImageController : ControllerBase
 
 
 
-    //[Authorize(Policy = "StaffOnly")]
     [HttpPut("Update")]
     public async Task<IActionResult> Update([FromBody] List<UpdateImageModel> updateImageModels)
     {
@@ -39,7 +38,6 @@ public class StaffImageController : ControllerBase
      
 
 
-    //[Authorize(Policy = "StaffOnly")]
     [HttpDelete("Delete")]
     public async Task<IActionResult> Delete([FromHeader] Guid id)
     {
