@@ -104,7 +104,6 @@ builder.Services.AddScoped<IProjectTaskCheckListService, ProjectTaskCheckListSer
 builder.Services.AddScoped<IProjectSubTicketService, ProjectSubTicketService>();
 builder.Services.AddScoped<ITypeOfActivityService, TypeOfActivityService>();
 builder.Services.AddScoped<IProjectTicketService, ProjectTicketService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IStaffImagesService, StaffImagesService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
 builder.Services.AddScoped<IProjectTaskService, ProjectTaskService>();
@@ -114,9 +113,10 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IVoenService, VoenService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IFileService, FileService>();
  
 builder.Services.AddScoped<GlobalExceptionsMiddleware>();
 
