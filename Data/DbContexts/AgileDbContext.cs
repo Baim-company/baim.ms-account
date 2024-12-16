@@ -80,7 +80,6 @@ public class AgileDbContext : DbContext
         builder.Entity<User>(entity =>
         {
             entity.HasKey(u => u.Id);
-            entity.Property(u => u.Id1C).HasMaxLength(50);
 
             entity.Property(u => u.Name).IsRequired();
             entity.Property(u => u.Surname).HasMaxLength(50);

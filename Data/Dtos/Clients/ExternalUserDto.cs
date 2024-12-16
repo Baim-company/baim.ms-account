@@ -6,7 +6,6 @@ namespace PersonalAccount.API.Models.Dtos.Clients;
 public class ExternalUserDto
 {
     public Guid Id { get; set; }
-    public string? Id1C { get; set; }
     public string? Position { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Surname { get; set; } = string.Empty;

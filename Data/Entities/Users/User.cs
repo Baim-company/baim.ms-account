@@ -10,7 +10,6 @@ namespace PersonalAccount.API.Models.Entities.Users;
 public class User
 {
     public Guid Id { get; set; }
-    public string? Id1C { get; set; }
     public string? Position { get; set; }
 
     public string Name { get; set; }
@@ -72,7 +71,6 @@ public class User
         PhoneNumber = externalUserDto.PhoneNumber;
         BusinessPhoneNumber = externalUserDto.BusinessPhoneNumber;
 
-        Id1C = externalUserDto.Id1C;
         Position = externalUserDto.Position;
         AvatarPath = externalUserDto.AvatarPath;
     }

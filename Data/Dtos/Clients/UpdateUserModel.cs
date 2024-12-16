@@ -4,7 +4,6 @@ namespace PersonalAccount.API.Models.Dtos.Clients;
 public record UpdateUserModel
 {
     public Guid Id { get; set; }
-    public string? Id1C { get; set; }
     public string? Position { get; set; }
 
     public string Name { get; set; } = string.Empty;
@@ -29,7 +28,6 @@ public record UpdateUserModel
     public UpdateUserModel(ExternalUserDto externalUserDto)
     {
         Id = externalUserDto.Id;
-        Id1C = externalUserDto.Id1C ?? "";
         Position = externalUserDto.Position ?? "";
         Name = externalUserDto.Name;
         Surname = externalUserDto.Surname ?? "";
