@@ -12,12 +12,10 @@ namespace PersonalAccount.API.Services.Implementations;
 public class CommentService : ICommentService
 {
     private readonly AgileDbContext _baimDbContext;
-    private readonly INotificationService _notificationService;
 
-    public CommentService(AgileDbContext dbContext, INotificationService notificationService)
+    public CommentService(AgileDbContext dbContext)
     {
         _baimDbContext = dbContext;
-        _notificationService = notificationService;
     }
 
     public async Task<SimpleApiResponse> AddCommentAsync(CreateCommentModel model)
@@ -63,7 +61,6 @@ public class CommentService : ICommentService
             _baimDbContext.Comments.Add(comment);
             await _baimDbContext.SaveChangesAsync();
 
-            await _notificationService.SendMentionNotificationsAsync(comment, mentionedUserIds);
 
             return new SimpleApiResponse("Comment added successfully");
         }
@@ -231,7 +228,6 @@ public class CommentService : ICommentService
 
             await _baimDbContext.SaveChangesAsync();
 
-            await _notificationService.SendReactionNotificationAsync(commentId, model.UserId, model.Emoji, DateTime.UtcNow);
 
             return new SimpleApiResponse("Reaction added successfully");
         }
