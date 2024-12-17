@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonalAccount.API.Data.Dtos.Clients;
+using PersonalAccount.API.Models.Entities.Clients;
 using PersonalAccount.API.Services.Abstractions;
 
 namespace PersonalAccount.API.Controllers;
@@ -21,7 +22,7 @@ public class TypeOfActivityController : ControllerBase
 
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<TypeOfActivityDto>> Type(Guid id)
+    public async Task<ActionResult<TypeOfActivity>> Type(Guid id)
     {
         var typeOfActivity = await _typeOfActivityService.GetTypeAsync(id);
 
@@ -33,7 +34,7 @@ public class TypeOfActivityController : ControllerBase
 
 
     [HttpGet("Types")]
-    public async Task<ActionResult<List<TypeOfActivityDto>>> Types()
+    public async Task<ActionResult<List<TypeOfActivity>>> Types()
     {
         var types = await _typeOfActivityService.GetTypesAsync();
 

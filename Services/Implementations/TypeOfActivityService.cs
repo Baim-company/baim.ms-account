@@ -19,18 +19,18 @@ public class TypeOfActivityService : ITypeOfActivityService
     }
 
 
-    public async Task<Response<TypeOfActivityDto>> GetTypeAsync(Guid id)
+    public async Task<Response<TypeOfActivity>> GetTypeAsync(Guid id)
     {
         var type = await _agileDbContext.TypeOfActivities.FindAsync(id);
 
         if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, $"Error!Failed to get type of activity with id: {id}");
 
-        return new Response<TypeOfActivityDto>("Succsess!", new TypeOfActivityDto(type.Title));
+        return new Response<TypeOfActivity>("Succsess!", type);
     }
 
 
 
-    public async Task<List<TypeOfActivityDto>> GetTypesAsync()
+    public async Task<List<TypeOfActivity>> GetTypesAsync()
     {
         var types = await _agileDbContext.TypeOfActivities
             .AsNoTracking()
@@ -38,11 +38,7 @@ public class TypeOfActivityService : ITypeOfActivityService
 
         if (types == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, "Error!Failed to get type of activities");
 
-        List<TypeOfActivityDto> typesName = new List<TypeOfActivityDto>();
-        foreach (var type in types)
-            typesName.Add(new TypeOfActivityDto(type.Title));
-
-        return typesName;
+        return types;
     }
 
 

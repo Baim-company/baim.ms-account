@@ -7,8 +7,8 @@ namespace PersonalAccount.API.Services.Abstractions;
 
 public interface ITypeOfActivityService
 {
-    Task<List<TypeOfActivityDto>> GetTypesAsync();
-    Task<Response<TypeOfActivityDto>> GetTypeAsync(Guid id); 
+    Task<List<TypeOfActivity>> GetTypesAsync();
+    Task<Response<TypeOfActivity>> GetTypeAsync(Guid id); 
     Task<Response<TypeOfActivityDto>> AddTypeAsync(TypeOfActivityDto typeOfActivityDto);
     Task<Response<List<TypeOfActivityDto>>> AddTypesRangeAsync(List<TypeOfActivityDto> typeOfActivityDtos);
     Task<Response<TypeOfActivityDto>> UpdateTypeAsync(Guid id, TypeOfActivityDto typeOfActivityDto); 
