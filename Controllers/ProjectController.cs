@@ -71,7 +71,7 @@ public class ProjectController : ControllerBase
 
 
 
-    [Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPost("Create")]
     public async Task<ActionResult<string>> Create([FromBody] ProjectModel projectModel)
     {
@@ -84,7 +84,7 @@ public class ProjectController : ControllerBase
 
 
 
-    [Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPut("Update")]
     public async Task<ActionResult<string>> Update([FromBody] UpdateProjectModel projectModel)
     {
@@ -95,7 +95,7 @@ public class ProjectController : ControllerBase
     }
 
 
-    [Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPatch("Projects/{id}/MarkAsCompleted")]
     public async Task<ActionResult<string>> MarkAsCompleted(Guid id)
     {
@@ -119,7 +119,7 @@ public class ProjectController : ControllerBase
 
 
 
-    [Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpDelete("Delete")]
     public async Task<ActionResult<string>> Delete([FromHeader]Guid id)
     {

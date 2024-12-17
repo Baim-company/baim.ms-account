@@ -36,7 +36,7 @@ public class CertificateController : ControllerBase
     }
 
 
-    [Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPost("Create")]
     public async Task<ActionResult<string>> Add([FromHeader]Guid staffId, [FromBody] List<CertificateModel> certificateModels)
     {
@@ -47,7 +47,7 @@ public class CertificateController : ControllerBase
     }
 
 
-    [Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPut("Update")]
     public async Task<ActionResult<string>> Update([FromBody] List<UpdateCertificateModel> certificateModels)
     {
@@ -59,7 +59,7 @@ public class CertificateController : ControllerBase
 
 
 
-    [Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpDelete("Delete")]
     public async Task<ActionResult<string>> Delete([FromHeader] Guid id)
     {

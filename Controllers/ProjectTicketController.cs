@@ -17,7 +17,7 @@ public class ProjectTicketController : ControllerBase
     }
 
 
-    //[Authorize]
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> ProjectTicket(Guid id)
     {
@@ -30,7 +30,7 @@ public class ProjectTicketController : ControllerBase
 
 
 
-    //[Authorize]
+    [Authorize]
     [HttpGet("ProjectTickets")]
     public async Task<IActionResult> ProjectTickets()
     {
@@ -44,7 +44,7 @@ public class ProjectTicketController : ControllerBase
 
 
 
-    //[Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPost("Create")]
     public async Task<IActionResult> Create([FromBody] ProjectTiketModel model)
     {
@@ -57,7 +57,7 @@ public class ProjectTicketController : ControllerBase
 
 
 
-    //[Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPut("Update")]
     public async Task<IActionResult> Update([FromBody] UpdateProjectTiketModel model)
     {
@@ -70,7 +70,7 @@ public class ProjectTicketController : ControllerBase
 
 
 
-    //[Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpDelete("Delete")]
     public async Task<IActionResult> Delete([FromHeader] Guid id)
     {

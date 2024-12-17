@@ -83,7 +83,7 @@ public class CompanyController : ControllerBase
     }
 
 
-    [Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPatch("Companies/{id}/TogglePublicStatus")]
     public async Task<ActionResult<string>> TogglePublicStatus(Guid id)
     {
