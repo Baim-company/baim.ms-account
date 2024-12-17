@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PersonalAccount.API.Data.Dtos.Clients;
 using PersonalAccount.API.Services.Abstractions;
 
 namespace PersonalAccount.API.Controllers;
@@ -20,19 +21,19 @@ public class TypeOfActivityController : ControllerBase
 
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<string>> Type(Guid id)
+    public async Task<ActionResult<TypeOfActivityDto>> Type(Guid id)
     {
         var typeOfActivity = await _typeOfActivityService.GetTypeAsync(id);
 
         if (typeOfActivity.Data == null) return BadRequest(typeOfActivity.Message);
 
-        return Ok(typeOfActivity.Data.Title);
+        return Ok(typeOfActivity.Data);
     }
 
 
 
     [HttpGet("Types")]
-    public async Task<ActionResult<List<string>>> Types()
+    public async Task<ActionResult<List<TypeOfActivityDto>>> Types()
     {
         var types = await _typeOfActivityService.GetTypesAsync();
 
@@ -43,21 +44,21 @@ public class TypeOfActivityController : ControllerBase
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPost("Create")]
-    public async Task<IActionResult> Create([FromBody] string title)
+    public async Task<ActionResult<string>> Create([FromBody] TypeOfActivityDto typeOfActivityDto)
     {
-        var response = await _typeOfActivityService.AddTypeAsync(title);
+        var response = await _typeOfActivityService.AddTypeAsync(typeOfActivityDto);
         if (response.Data == null) return BadRequest($"{response.Message}");
 
-        return Ok(response.Data);
+        return Ok(response.Message);
     }
 
 
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPost("CreateRange")]
-    public async Task<ActionResult<string>> CreateTypes([FromBody] List<string> titles)
+    public async Task<ActionResult<string>> CreateTypes([FromBody] List<TypeOfActivityDto> typeOfActivityDtos)
     {
-        var response = await _typeOfActivityService.AddTypesRangeAsync(titles);
+        var response = await _typeOfActivityService.AddTypesRangeAsync(typeOfActivityDtos);
         if (response.Data == null) return BadRequest(response.Message);
 
         return Ok(response.Message);
@@ -66,9 +67,9 @@ public class TypeOfActivityController : ControllerBase
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPatch("Update/{id}")]
-    public async Task<ActionResult<string>> UpdateTitle(Guid id, [FromBody] string title)
+    public async Task<ActionResult<string>> UpdateTitle(Guid id, [FromBody] TypeOfActivityDto typeOfActivityDto)
     {
-        var result = await _typeOfActivityService.UpdateTypeAsync(id, title);
+        var result = await _typeOfActivityService.UpdateTypeAsync(id, typeOfActivityDto);
         if (result.Data == null) return BadRequest(result.Message);
 
         return Ok(result.Message);

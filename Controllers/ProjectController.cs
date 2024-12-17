@@ -97,7 +97,7 @@ public class ProjectController : ControllerBase
 
     [Authorize(Policy = "AdminAndStaffOnly")]
     [HttpPatch("Projects/{id}/MarkAsCompleted")]
-    public async Task<ActionResult<string>> MarkAsCompleted([FromHeader] Guid id)
+    public async Task<ActionResult<string>> MarkAsCompleted(Guid id)
     {
         var result = await _projectService.CompleteProjectAsync(id);
         if (result.Data == null) return BadRequest(result.Message);
@@ -108,7 +108,7 @@ public class ProjectController : ControllerBase
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPatch("Projects/{id}/SetPublicStatus")]
-    public async Task<ActionResult<string>> SetPublicStatus([FromHeader] Guid id)
+    public async Task<ActionResult<string>> SetPublicStatus(Guid id)
     {
         var result = await _projectService.MakeProjectPublicAsync(id);
         if (result.Data == null) return BadRequest(result.Message);

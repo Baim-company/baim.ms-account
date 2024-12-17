@@ -97,9 +97,9 @@ public class StaffController : ControllerBase
 
     [Authorize(Policy = "StaffAndAdminOnly")]
     [HttpPatch("ChangePosition/{staffId}")]
-    public async Task<ActionResult<string>> ChangePosition(Guid staffId, [FromBody] string position)
+    public async Task<ActionResult<string>> ChangePosition(Guid staffId, [FromBody] PositionUpdateDto positionUpdateDto)
     {
-        var result = await _staffService.ChangePositionAsync(staffId, position);
+        var result = await _staffService.ChangePositionAsync(staffId, positionUpdateDto.Position);
         if (result.Data == null) return BadRequest(result.Message);
 
         return Ok(result.Message);
@@ -120,9 +120,9 @@ public class StaffController : ControllerBase
 
     [Authorize(Policy = "StaffAndAdminOnly")]
     [HttpPatch("SetExperience/{id}")]
-    public async Task<ActionResult<string>> SetExperience(Guid id, [FromBody] ushort experience)
+    public async Task<ActionResult<string>> SetExperience(Guid id, [FromBody] ExperienceUpdateDto experienceUpdateDto)
     {
-        var result = await _staffService.SetStaffExperienceAsync(id, experience);
+        var result = await _staffService.SetStaffExperienceAsync(id, experienceUpdateDto.Experience);
         if (result.Data == null) return BadRequest(result.Message);
 
         return Ok(result.Message);

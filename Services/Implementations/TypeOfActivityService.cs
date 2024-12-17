@@ -4,6 +4,7 @@ using PersonalAccount.API.Models.Dtos.Responses;
 using PersonalAccount.API.Services.Abstractions;
 using PersonalAccount.API.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
+using PersonalAccount.API.Data.Dtos.Clients;
 
 
 namespace PersonalAccount.API.Services.Implementations;
@@ -18,18 +19,18 @@ public class TypeOfActivityService : ITypeOfActivityService
     }
 
 
-    public async Task<Response<TypeOfActivity>> GetTypeAsync(Guid id)
+    public async Task<Response<TypeOfActivityDto>> GetTypeAsync(Guid id)
     {
         var type = await _agileDbContext.TypeOfActivities.FindAsync(id);
 
         if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, $"Error!Failed to get type of activity with id: {id}");
 
-        return new Response<TypeOfActivity>("Succsess!", type);
+        return new Response<TypeOfActivityDto>("Succsess!", new TypeOfActivityDto(type.Title));
     }
 
 
 
-    public async Task<List<string>> GetTypesAsync()
+    public async Task<List<TypeOfActivityDto>> GetTypesAsync()
     {
         var types = await _agileDbContext.TypeOfActivities
             .AsNoTracking()
@@ -37,57 +38,57 @@ public class TypeOfActivityService : ITypeOfActivityService
 
         if (types == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, "Error!Failed to get type of activities");
 
-        List<string> typesName = new List<string>();
+        List<TypeOfActivityDto> typesName = new List<TypeOfActivityDto>();
         foreach (var type in types)
-            typesName.Add(type.Title);
+            typesName.Add(new TypeOfActivityDto(type.Title));
 
         return typesName;
     }
 
 
 
-    public async Task<Response<TypeOfActivity>> AddTypeAsync(string title)
+    public async Task<Response<TypeOfActivityDto>> AddTypeAsync(TypeOfActivityDto typeOfActivityDto)
     {
         var type = await _agileDbContext.TypeOfActivities
             .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Title == title);
-        if (type != null) return new Response<TypeOfActivity>($"Error!Type of activity: {title} already exist!");
+            .FirstOrDefaultAsync(t => t.Title == typeOfActivityDto.Title);
+        if (type != null) return new Response<TypeOfActivityDto>($"Error!Type of activity: {typeOfActivityDto.Title} already exist!");
 
 
-        TypeOfActivity typeOfActivity = new(title);
+        TypeOfActivity typeOfActivity = new(typeOfActivityDto.Title);
 
         await _agileDbContext.TypeOfActivities.AddAsync(typeOfActivity);
         await _agileDbContext.SaveChangesAsync();
 
-        return new Response<TypeOfActivity>("Successfully created!", typeOfActivity);
+        return new Response<TypeOfActivityDto>("Successfully created!", new TypeOfActivityDto(typeOfActivityDto.Title));
     }
 
 
 
 
-    public async Task<Response<List<TypeOfActivity>>> AddTypesRangeAsync(List<string> titles)
+    public async Task<Response<List<TypeOfActivityDto>>> AddTypesRangeAsync(List<TypeOfActivityDto> typeOfActivityDtos)
     {
         List<TypeOfActivity> typeOfActivities = new();
-        foreach (var title in titles)
+        foreach (var typeOfActivityDto in typeOfActivityDtos)
         {
             var type = await _agileDbContext.TypeOfActivities
                 .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Title == title);
-            if (type != null) return new Response<List<TypeOfActivity>>($"Error! Failed to create type of activity with title: {title}. Already exist!");
+                .FirstOrDefaultAsync(t => t.Title == typeOfActivityDto.Title);
+            if (type != null) return new Response<List<TypeOfActivityDto>>($"Error! Failed to create type of activity with title: {typeOfActivityDto.Title}. Already exist!");
 
-            typeOfActivities.Add(new TypeOfActivity(title));
+            typeOfActivities.Add(new TypeOfActivity(typeOfActivityDto.Title));
         }
 
         await _agileDbContext.TypeOfActivities.AddRangeAsync(typeOfActivities);
         await _agileDbContext.SaveChangesAsync();
 
-        return new Response<List<TypeOfActivity>>("Successfully added .", typeOfActivities);
+        return new Response<List<TypeOfActivityDto>>("Successfully added .", new List<TypeOfActivityDto>());
     }
 
 
 
 
-    public async Task<Response<TypeOfActivity>> UpdateTypeAsync(Guid id, string title)
+    public async Task<Response<TypeOfActivityDto>> UpdateTypeAsync(Guid id, TypeOfActivityDto typeOfActivityDto)
     {
         var type = await _agileDbContext.TypeOfActivities.FindAsync(id);
         if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound,
@@ -96,16 +97,16 @@ public class TypeOfActivityService : ITypeOfActivityService
         await _agileDbContext.TypeOfActivities
             .Where(u => u.Id == id)
             .ExecuteUpdateAsync(u => u
-                .SetProperty(u => u.Title, title));
+                .SetProperty(u => u.Title, typeOfActivityDto.Title));
 
         await _agileDbContext.SaveChangesAsync();
 
-        return new Response<TypeOfActivity>("Type of activity updated successfully!", new TypeOfActivity());
+        return new Response<TypeOfActivityDto>("Type of activity updated successfully!", new TypeOfActivityDto());
     }
 
 
 
-    public async Task<Response<TypeOfActivity>> DeleteTypeAsync(Guid id)
+    public async Task<Response<TypeOfActivityDto>> DeleteTypeAsync(Guid id)
     {
         var type = await _agileDbContext.TypeOfActivities.FindAsync(id);
         if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound,
@@ -116,6 +117,6 @@ public class TypeOfActivityService : ITypeOfActivityService
             .ExecuteDeleteAsync();
         await _agileDbContext.SaveChangesAsync();
 
-        return new Response<TypeOfActivity>("Successfully deleted!", new TypeOfActivity());
+        return new Response<TypeOfActivityDto>("Successfully deleted!", new TypeOfActivityDto());
     }
 }
