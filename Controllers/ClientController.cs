@@ -94,15 +94,14 @@ public class ClientController : ControllerBase
     }
 
 
-
-
     [Authorize(Policy = "AdminOnly")]
-    [HttpPut("Activate/Client/{id}")]
-    public async Task<IActionResult> ActiveById(Guid id)
+    [HttpPatch("Clients/{id}/Activate")]
+    public async Task<IActionResult> ActivateClient(Guid id)
     {
         var result = await _clientService.UpdateClientActiveStatusAsync(id);
         if (result.Data == null) return BadRequest(result.Message);
 
         return Ok(result.Data);
     }
+
 }

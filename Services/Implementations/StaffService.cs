@@ -58,8 +58,6 @@ public class StaffService : IStaffService
     public async Task<PagedResponse<Staff>> GetFilteredStaffAsync(PaginationParameters paginationParameters, string? orFilter, string? orPosition)
     {
         var staffQuery = _agileDbContext.Staff
-            .Include(s => s.StaffImages)
-            .Include(s => s.Certificates)
             .Include(c => c.User)
             .ThenInclude(u => u.UserRoles)
             .ThenInclude(r => r.Role)
@@ -107,6 +105,11 @@ public class StaffService : IStaffService
             .Take(paginationParameters.PageSize)
             .ToListAsync();
 
+        foreach (var staff in paginatedStaff)
+        {
+            staff.User.AvatarPath = $"{_baseImageUrl}/{staff.User.AvatarPath}".Replace("\\", "/");
+        }
+
         return new PagedResponse<Staff>(paginatedStaff, paginationParameters.PageNumber, paginationParameters.PageSize, totalRecords);
     }
 
@@ -150,20 +153,20 @@ public class StaffService : IStaffService
 
 
 
-    public async Task<Response<Staff>> ChangePositionAsync(UpdatePosition updatePosition)
+    public async Task<Response<Staff>> ChangePositionAsync(Guid id,string position)
     {
         var staff = await _agileDbContext.Staff
             .Include(c => c.User)
-            .Where(c => c.UserId == updatePosition.Id)
+            .Where(c => c.UserId == id)
             .FirstOrDefaultAsync();
         if (staff == null) 
             throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, 
-                $"Error!\nStaff with user id: {updatePosition.Id} doesn't exist!");
+                $"Error!\nStaff with user id: {id} doesn't exist!");
 
         await _agileDbContext.Users
-            .Where(u => u.Id == updatePosition.Id)
+            .Where(u => u.Id == id)
             .ExecuteUpdateAsync(u => u
-                .SetProperty(u => u.Position, updatePosition.Position));
+                .SetProperty(u => u.Position, position));
         await _agileDbContext.SaveChangesAsync();
 
         return new Response<Staff>("Successfully updated!", new Staff());
@@ -237,6 +240,13 @@ public class StaffService : IStaffService
     }
 
 
+
+
+
+    /// <summary>
+    /// Не понимаю зачем эти методы
+    /// </summary>
+    /// <returns></returns>
     public async Task<Response<List<StaffSummaryDto>>> GetAllStaffSortedByExperience()
     {
         try
@@ -276,6 +286,14 @@ public class StaffService : IStaffService
             return new Response<List<StaffSummaryDto>>($"Failed to retrieve staff data: {ex.Message}");
         }
     }
+
+
+
+
+    /// <summary>
+    /// Не понимаю зачем эти методы
+    /// </summary>
+    /// <returns></returns>
     public async Task<Response<StaffDetailsDto>> GetStaffDetailsByIdAsync(Guid staffId)
     {
         try
@@ -360,6 +378,12 @@ public class StaffService : IStaffService
     }
 
 
+
+
+    /// <summary>
+    /// Не понимаю зачем эти методы
+    /// </summary>
+    /// <returns></returns>
     private (int completedProjectsCount, int totalClientsCount)
         CalculateCompletedProjectsAndClients(Staff staff)
     {

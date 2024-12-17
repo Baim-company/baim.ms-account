@@ -94,7 +94,7 @@ public class StaffImagesService : IStaffImagesService
     }
 
 
-
+    // Стоит ли удалять ??? Или пусть всегда будет только PUT
     public async Task<Response<StaffImage>> DeleteImageAsync(Guid id)
     {
         var img = await _agileDbContext.StaffImages.FindAsync(id);

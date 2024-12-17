@@ -77,7 +77,6 @@ public class UserPhotoService : IUserPhotoService
         if (user == null)
             return new Response<bool>("User not found.");
 
-
         user.AvatarPath = filePath;
         await _agileDbContext.SaveChangesAsync();
 

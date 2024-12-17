@@ -8,17 +8,16 @@ using PersonalAccount.API.Models.Entities.Staffs;
 namespace PersonalAccount.API.Services.Abstractions;
 public interface IStaffService
 {
-    public Task<Response<Staff>> GetStaffAsync(Guid id); 
-    public Task<PagedResponse<Staff>> GetFilteredStaffAsync(PaginationParameters? paginationParameters = null, string? orFilter = null,string? orPosition = null);
-     
-    public Task<Response<Staff>> AddStaffAsync(ExternalUserDto externalUserDto);
-    public Task<Response<Staff>> UpdateStaffDataAsync(UpdateUserModel updateUserModel);
+    Task<Response<Staff>> GetStaffAsync(Guid id); 
+    Task<PagedResponse<Staff>> GetFilteredStaffAsync(PaginationParameters? paginationParameters = null, string? orFilter = null,string? orPosition = null);
+    
+    Task<Response<Staff>> AddStaffAsync(ExternalUserDto externalUserDto);
+    Task<Response<Staff>> UpdateStaffDataAsync(UpdateUserModel updateUserModel);
 
-    public Task<Response<Staff>> SetStaffExperienceAsync(Guid id, ushort experience);
-    public Task<Response<Staff>> SetIsWorkingOrDismissedAsync(Guid id);
-    Task<Response<Staff>> ChangePositionAsync(UpdatePosition updatePosition);
+    Task<Response<Staff>> SetStaffExperienceAsync(Guid id, ushort experience);
+    Task<Response<Staff>> SetIsWorkingOrDismissedAsync(Guid id);
+    Task<Response<Staff>> ChangePositionAsync(Guid id, string position);
     Task<Response<List<StaffSummaryDto>>> GetAllStaffSortedByExperience();
     Task<Response<StaffDetailsDto>> GetStaffDetailsByIdAsync(Guid staffId);
-
 
 }

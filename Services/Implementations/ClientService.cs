@@ -5,6 +5,7 @@ using PersonalAccount.API.Models.Dtos;
 using PersonalAccount.API.Models.Dtos.Clients;
 using PersonalAccount.API.Models.Dtos.Responses;
 using PersonalAccount.API.Models.Entities.Clients;
+using PersonalAccount.API.Models.Entities.Staffs;
 using PersonalAccount.API.Models.Entities.Users;
 using PersonalAccount.API.Services.Abstractions;
 
@@ -13,11 +14,18 @@ namespace PersonalAccount.API.Services.Implementations;
 public class ClientService : IClientService
 {
 
+    private readonly string _baseImageUrl;
+    private readonly IFileService _fileService;
     private readonly AgileDbContext _agileDbContext;
 
-    public ClientService(AgileDbContext agileDbContext)
+    public ClientService(AgileDbContext agileDbContext,
+        IConfiguration configuration,
+        IFileService fileService)
     {
+        _fileService = fileService;
         _agileDbContext = agileDbContext;
+        _baseImageUrl = configuration["BaseImageUrl"]
+            ?? throw new Exception("BaseImageUrl is not configured");
     }
 
 
@@ -33,65 +41,60 @@ public class ClientService : IClientService
         if (client == null)
             throw new PersonalAccountException(PersonalAccountErrorType.ClientNotFound, $"Client with user id: {userId} does not exist!");
 
+        client.User.AvatarPath = $"{_baseImageUrl}/{client.User.AvatarPath}".Replace("\\", "/");
+
         return new Response<Client>("Success", client);
     }
 
 
     public async Task<Response<Client>> GetClientAsync(Guid id)
     {
-        try
-        {
-            var client = await _agileDbContext.Clients
-                .Include(c => c.Company)
-                .Include(c => c.User)
-                .ThenInclude(u => u.UserRoles)
-                .ThenInclude(r => r.Role)
-                .FirstOrDefaultAsync(c => c.Id == id);
+        var client = await _agileDbContext.Clients
+            .Include(c => c.Company)
+            .Include(c => c.User)
+            .ThenInclude(u => u.UserRoles)
+            .ThenInclude(r => r.Role)
+            .FirstOrDefaultAsync(c => c.Id == id);
 
-            if (client == null)
-                throw new PersonalAccountException(PersonalAccountErrorType.ClientNotFound, $"Client with id: {id} does not exist!");
+        if (client == null)
+            throw new PersonalAccountException(PersonalAccountErrorType.ClientNotFound, $"Client with id: {id} does not exist!");
 
-            return new Response<Client>("Success", client);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        client.User.AvatarPath = $"{_baseImageUrl}/{client.User.AvatarPath}".Replace("\\", "/");
+
+        return new Response<Client>("Success", client);
     }
 
     public async Task<PagedResponse<Client>> GetFilteredClientsAsync(PaginationParameters paginationParameters, string? onFilter)
     {
-        try
+        var clientsQuery = _agileDbContext.Clients
+            .Include(c => c.Company)
+            .Include(c => c.User)
+            .ThenInclude(u => u.UserRoles)
+            .ThenInclude(r => r.Role)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(onFilter))
         {
-            var clientsQuery = _agileDbContext.Clients
-                .Include(c => c.Company)
-                .Include(c => c.User)
-                .ThenInclude(u => u.UserRoles)
-                .ThenInclude(r => r.Role)
-                .AsNoTracking()
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(onFilter))
-            {
-                clientsQuery = clientsQuery.Where(client =>
-                    (client.User.Name != null && client.User.Name.ToLower().Contains(onFilter.ToLower())) ||
-                    (client.User.Surname != null && client.User.Surname.ToLower().Contains(onFilter.ToLower())) ||
-                    (client.User.Email != null && client.User.Email.ToLower().Contains(onFilter.ToLower()))
-                );
-            }
-
-            var totalRecords = await clientsQuery.CountAsync();
-            var paginatedClients = await clientsQuery
-                .Skip((paginationParameters.PageNumber - 1) * paginationParameters.PageSize)
-                .Take(paginationParameters.PageSize)
-                .ToListAsync();
-
-            return new PagedResponse<Client>(paginatedClients, paginationParameters.PageNumber, paginationParameters.PageSize, totalRecords);
+            clientsQuery = clientsQuery.Where(client =>
+                (client.User.Name != null && client.User.Name.ToLower().Contains(onFilter.ToLower())) ||
+                (client.User.Surname != null && client.User.Surname.ToLower().Contains(onFilter.ToLower())) ||
+                (client.User.Email != null && client.User.Email.ToLower().Contains(onFilter.ToLower()))
+            );
         }
-        catch (Exception)
+
+        var totalRecords = await clientsQuery.CountAsync();
+        var paginatedClients = await clientsQuery
+            .Skip((paginationParameters.PageNumber - 1) * paginationParameters.PageSize)
+            .Take(paginationParameters.PageSize)
+            .ToListAsync();
+
+        foreach (var client in paginatedClients)
         {
-            throw;
+            client.User.AvatarPath = $"{_baseImageUrl}/{client.User.AvatarPath}".Replace("\\", "/");
         }
+
+        return new PagedResponse<Client>(paginatedClients, paginationParameters.PageNumber, paginationParameters.PageSize, totalRecords);
     }
 
 

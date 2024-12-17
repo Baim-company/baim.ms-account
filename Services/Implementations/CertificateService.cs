@@ -119,6 +119,7 @@ public class CertificateService : ICertificateService
     }
 
 
+
     public async Task<Response<Certificate>> DeleteCertificatesAsync(Guid id)
     {
         var certificateExist = await _agileDbContext.Certificates.FindAsync(id);

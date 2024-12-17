@@ -7,16 +7,26 @@ using PersonalAccount.API.Data.DbContexts;
 using PersonalAccount.API.Models.Enums;
 using PersonalAccount.API.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
+using PersonalAccount.API.Models.Entities.Staffs;
 
 
 namespace PersonalAccount.API.Services.Implementations;
 
 public class ProjectService : IProjectService
 {
+
+    private readonly string _baseImageUrl;
+    private readonly IFileService _fileService;
     private readonly AgileDbContext _agileDbContext;
-    public ProjectService(AgileDbContext agileDbContext)
+
+    public ProjectService(AgileDbContext agileDbContext,
+        IConfiguration configuration,
+        IFileService fileService)
     {
         _agileDbContext = agileDbContext;
+        _fileService = fileService;
+        _baseImageUrl = configuration["BaseImageUrl"]
+            ?? throw new Exception("BaseImageUrl is not configured");
     }
 
 
@@ -64,6 +74,13 @@ public class ProjectService : IProjectService
                 .Skip((paginationParameters.PageNumber - 1) * paginationParameters.PageSize)
                 .Take(paginationParameters.PageSize)
                 .ToListAsync();
+
+
+        foreach (var item in paginatedProjects)
+        {
+            item.DesignThemeImagePath = $"{_baseImageUrl}/{item.DesignThemeImagePath}".Replace("\\", "/");
+            item.ProjectAvatarImagePath = $"{_baseImageUrl}/{item.ProjectAvatarImagePath}".Replace("\\", "/");
+        }
 
         return new PagedResponse<Project>(paginatedProjects, paginationParameters.PageNumber, paginationParameters.PageSize, totalRecords);
     }
@@ -119,6 +136,14 @@ public class ProjectService : IProjectService
                 .Take(paginationParameters.PageSize)
                 .ToListAsync();
 
+
+        foreach (var item in paginatedProjects)
+        {
+            item.DesignThemeImagePath = $"{_baseImageUrl}/{item.DesignThemeImagePath}".Replace("\\", "/");
+            item.ProjectAvatarImagePath = $"{_baseImageUrl}/{item.ProjectAvatarImagePath}".Replace("\\", "/");
+        }
+
+
         return new PagedResponse<Project>(paginatedProjects, paginationParameters.PageNumber, paginationParameters.PageSize, totalRecords);
     }
 
@@ -167,6 +192,12 @@ public class ProjectService : IProjectService
                 .Take(paginationParameters.PageSize)
                 .ToListAsync();
 
+        foreach (var item in paginatedProjects)
+        {
+            item.DesignThemeImagePath = $"{_baseImageUrl}/{item.DesignThemeImagePath}".Replace("\\", "/");
+            item.ProjectAvatarImagePath = $"{_baseImageUrl}/{item.ProjectAvatarImagePath}".Replace("\\", "/");
+        }
+
         return new PagedResponse<Project>(paginatedProjects, paginationParameters.PageNumber, paginationParameters.PageSize, totalRecords);
     }
 
@@ -185,6 +216,9 @@ public class ProjectService : IProjectService
             .FirstOrDefaultAsync(p => p.Id == id && p.IsPublic);
 
         if (projectExist == null) throw new PersonalAccountException(PersonalAccountErrorType.ProjectNotFound, $"Error!Failed to get project with id: {id}");
+
+        projectExist.DesignThemeImagePath= $"{_baseImageUrl}/{projectExist.DesignThemeImagePath}".Replace("\\", "/");
+        projectExist.ProjectAvatarImagePath= $"{_baseImageUrl}/{projectExist.ProjectAvatarImagePath}".Replace("\\", "/");
 
         return new Response<Project>("Success", projectExist);
     }

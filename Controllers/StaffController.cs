@@ -5,6 +5,7 @@ using PersonalAccount.API.Models.Dtos;
 using PersonalAccount.API.Models.Dtos.Clients;
 using PersonalAccount.API.Models.Dtos.Responses;
 using PersonalAccount.API.Models.Dtos.Staffs;
+using PersonalAccount.API.Models.Entities.Staffs;
 using PersonalAccount.API.Services.Abstractions;
 
 namespace PersonalAccount.API.Controllers;
@@ -22,9 +23,9 @@ public class StaffController : ControllerBase
 
 
 
-    
+
     [HttpGet("{id}")]
-    public async Task<IActionResult> Staff(Guid id)
+    public async Task<ActionResult<Staff>> Staff(Guid id)
     {
         var response = await _staffService.GetStaffAsync(id);
 
@@ -35,9 +36,9 @@ public class StaffController : ControllerBase
 
 
 
-    
+
     [HttpGet("Staffs")]
-    public async Task<IActionResult> Staffs([FromQuery] PaginationParameters paginationParameters, [FromQuery] string? onFilter, [FromQuery] string? onPosition)
+    public async Task<ActionResult<PagedResponse<Staff>>> Staffs([FromQuery] PaginationParameters paginationParameters, [FromQuery] string? onFilter, [FromQuery] string? onPosition)
     {
         var staffs = await _staffService.GetFilteredStaffAsync(paginationParameters, onFilter, onPosition);
 
@@ -48,91 +49,82 @@ public class StaffController : ControllerBase
     [HttpGet("StaffSummary")]
     public async Task<ActionResult<Response<List<StaffSummaryDto>>>> GetAllStaff()
     {
-        
-            var staff = await _staffService.GetAllStaffSortedByExperience();
+        var staff = await _staffService.GetAllStaffSortedByExperience();
 
-            if (staff.Data == null)
-            {
-                staff.Data = new List<StaffSummaryDto>(); 
-            }
+        if (staff.Data == null)
+        {
+            staff.Data = new List<StaffSummaryDto>();
+        }
 
-            return Ok(staff); 
-        
+        return Ok(staff);
     }
 
 
     [HttpGet("StaffDetails")]
-    public async Task<IActionResult> StaffDetails(Guid id)
+    public async Task<ActionResult<StaffDetailsDto>> StaffDetails(Guid id)
     {
+        var staffDetails = await _staffService.GetStaffDetailsByIdAsync(id);
+        if (staffDetails.Data == null) return BadRequest(staffDetails.Message);
 
-            var staffDetails = await _staffService.GetStaffDetailsByIdAsync(id);
-            return Ok(staffDetails);
-        
+        return Ok(staffDetails.Data);
     }
 
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPost("Create")]
-    public async Task<IActionResult> Create([FromBody] ExternalUserDto externalUserDto)
+    public async Task<ActionResult<string>> Create([FromBody] ExternalUserDto externalUserDto)
     {
         var response = await _staffService.AddStaffAsync(externalUserDto);
         if (response.Data == null) return BadRequest($"{response.Message}");
 
-        return Ok(response.Data);
+        return Ok(response.Message);
     }
 
 
 
     [Authorize(Policy = "StaffAndAdminOnly")]
     [HttpPut("Update")]
-    public async Task<IActionResult> Update([FromBody] UpdateUserModel updateUserModel)
+    public async Task<ActionResult<string>> Update([FromBody] UpdateUserModel updateUserModel)
     {
         var result = await _staffService.UpdateStaffDataAsync(updateUserModel);
         if (result.Data == null) return BadRequest(result.Message);
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 
 
 
 
-
-    [Authorize(Policy = "AdminOnly")]
-    [HttpPut("ChangePosition")]
-    public async Task<IActionResult> ChangePosition([FromBody] UpdatePosition updatePosition)
+    [Authorize(Policy = "StaffAndAdminOnly")]
+    [HttpPatch("ChangePosition/{staffId}")]
+    public async Task<ActionResult<string>> ChangePosition(Guid staffId, [FromBody] string position)
     {
-        var result = await _staffService.ChangePositionAsync(updatePosition);
+        var result = await _staffService.ChangePositionAsync(staffId, position);
         if (result.Data == null) return BadRequest(result.Message);
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 
 
 
-
-
     [Authorize(Policy = "AdminOnly")]
-    [HttpPut("SetIsWorkingOrDismissed")]
-    public async Task<IActionResult> SetIsWorkingOrDismissed([FromHeader] Guid id)
+    [HttpPatch("SetIsWorkingOrDismissed/{id}")]
+    public async Task<ActionResult<string>> SetIsWorkingOrDismissed(Guid id)
     {
         var result = await _staffService.SetIsWorkingOrDismissedAsync(id);
         if (result.Data == null) return BadRequest(result.Message);
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 
 
-
-
-
-
-    [Authorize(Policy = "AdminOnly")]
-    [HttpPut("SetExperience")]
-    public async Task<IActionResult> SetExperience([FromHeader] Guid id, [FromHeader] ushort experience)
+    [Authorize(Policy = "StaffAndAdminOnly")]
+    [HttpPatch("SetExperience/{id}")]
+    public async Task<ActionResult<string>> SetExperience(Guid id, [FromBody] ushort experience)
     {
         var result = await _staffService.SetStaffExperienceAsync(id, experience);
         if (result.Data == null) return BadRequest(result.Message);
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 }

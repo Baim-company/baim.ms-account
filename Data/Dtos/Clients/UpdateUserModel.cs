@@ -10,7 +10,6 @@ public record UpdateUserModel
     public string Surname { get; set; } = string.Empty;
     public string Patronymic { get; set; } = string.Empty;
     public DateTime BirthDate { get; set; } = DateTime.MinValue;
-    public string Role { get; set; }
 
     public string Email { get; set; } = string.Empty;
     public string PersonalEmail { get; set; } = string.Empty;
@@ -33,7 +32,6 @@ public record UpdateUserModel
         Surname = externalUserDto.Surname ?? "";
         Patronymic = externalUserDto.Patronymic ?? "";
         BirthDate = externalUserDto.BirthDate;
-        Role = externalUserDto.Role;
 
         Email = externalUserDto.Email;
         PersonalEmail = externalUserDto.PersonalEmail ?? "";
