@@ -82,7 +82,7 @@ public class StaffController : ControllerBase
 
 
 
-    [Authorize(Policy = "StaffAndAdminOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPut("Update")]
     public async Task<ActionResult<string>> Update([FromBody] UpdateUserModel updateUserModel)
     {
@@ -95,7 +95,7 @@ public class StaffController : ControllerBase
 
 
 
-    [Authorize(Policy = "StaffAndAdminOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPatch("ChangePosition/{staffId}")]
     public async Task<ActionResult<string>> ChangePosition(Guid staffId, [FromBody] PositionUpdateDto positionUpdateDto)
     {
@@ -118,7 +118,7 @@ public class StaffController : ControllerBase
     }
 
 
-    [Authorize(Policy = "StaffAndAdminOnly")]
+    [Authorize(Policy = "StaffOnly")]
     [HttpPatch("SetExperience/{id}")]
     public async Task<ActionResult<string>> SetExperience(Guid id, [FromBody] ExperienceUpdateDto experienceUpdateDto)
     {

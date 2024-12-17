@@ -6,7 +6,7 @@ namespace PersonalAccount.API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize(Policy = "StaffAndAdminOnly")]
+[Authorize(Policy = "StaffOnly")]
 public class StaffImageController : ControllerBase
 {
     private readonly IStaffImagesService _staffImagesService;

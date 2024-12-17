@@ -93,9 +93,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("StaffOnly", policy => policy.RequireRole("Staff"));
-    options.AddPolicy("UserAdminOnly", policy => policy.RequireRole("UserAdmin"));
-    options.AddPolicy("StaffAndAdminOnly", policy => policy.RequireRole("Staff", "Admin"));
+    options.AddPolicy("StaffOnly", policy => policy.RequireRole("Staff", "Admin"));
+    options.AddPolicy("UserAdminOnly", policy => policy.RequireRole("UserAdmin", "Admin"));
     options.AddPolicy("HighPriorityOnly", policy => policy.RequireRole("Admin", "Staff","UserAdmin"));
 });
 
