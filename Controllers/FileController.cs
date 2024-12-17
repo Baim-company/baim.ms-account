@@ -5,9 +5,8 @@ using PersonalAccount.API.Services.Abstractions;
 
 namespace PersonalAccount.API.Controllers;
 
-
+[Authorize]
 [ApiController]
-[Authorize(Policy = "AdminOnly")]
 [Route("[controller]")]
 public class FileController : ControllerBase
 {
@@ -45,6 +44,8 @@ public class FileController : ControllerBase
 
         return Ok(result.Data);
     }
+
+
 
     [HttpPut("Change")]
     public async Task<ActionResult<string>> UpdateFile([FromHeader] string fileName, IFormFile newFile)

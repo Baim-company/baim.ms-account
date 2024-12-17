@@ -15,6 +15,7 @@ public class FileService : IFileService
     }
 
 
+
     public async Task<Response<FileDto>> GetFileByNameAsync(string fileName)
     {
         var filePath = Path.Combine(
@@ -33,6 +34,8 @@ public class FileService : IFileService
             FileContent = fileBytes
         });
     }
+
+
 
 
     public async Task<Response<string>> CreateFileAsync(IFormFile newFile)
@@ -54,6 +57,45 @@ public class FileService : IFileService
 
         return new Response<string>("File was uploaded successfully.", fileName);
     }
+
+    public async Task<Response<List<string>>> CreateFilesAsync(List<IFormFile> files)
+    {
+        if (files == null || !files.Any())
+            return new Response<List<string>>("No files were provided.");
+
+        var uploadedFiles = new List<string>();
+
+        foreach (var file in files)
+        {
+            if (file == null || file.Length == 0)
+                continue;
+
+            var fileExtension = Path.GetExtension(file.FileName);
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+
+            var filePath = Path.Combine(_imagesRootPath, fileName);
+
+            try
+            {
+                await using var stream = File.Create(filePath);
+                await file.CopyToAsync(stream);
+
+                uploadedFiles.Add(fileName);
+            }
+            catch (Exception ex)
+            {
+                return new Response<List<string>>($"Failed to upload file {file.FileName}: {ex.Message}");
+            }
+        }
+
+        if (!uploadedFiles.Any())
+            return new Response<List<string>>("No files were successfully uploaded.");
+
+        return new Response<List<string>>("Files uploaded successfully.", uploadedFiles);
+    }
+
+
+
 
 
     public async Task<Response<string>> UpdateFileAsync(string fileName, IFormFile newFile)
@@ -92,6 +134,58 @@ public class FileService : IFileService
 
         return new Response<string>("File updated successfully!", newFileName);
     }
+
+
+    public async Task<Response<List<string>>> UpdateFilesAsync(List<(string oldFileName, IFormFile newFile)> fileUpdates)
+    {
+        if (fileUpdates == null || !fileUpdates.Any())
+            return new Response<List<string>>("No files to update were provided.");
+
+        var updatedFiles = new List<string>();
+
+        foreach (var (oldFileName, newFile) in fileUpdates)
+        {
+            if (newFile == null || newFile.Length == 0)
+                continue;
+
+            var oldFilePath = Path.Combine(_imagesRootPath, oldFileName);
+
+            var newFileName = $"{Guid.NewGuid()}{Path.GetExtension(newFile.FileName)}";
+            var newFilePath = Path.Combine(_imagesRootPath, newFileName);
+
+            try
+            {
+                await using var stream = File.Create(newFilePath);
+                await newFile.CopyToAsync(stream);
+
+                if (File.Exists(oldFilePath))
+                {
+                    try
+                    {
+                        File.Delete(oldFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new Response<List<string>>($"Failed to delete the old file '{oldFileName}': {ex.Message}");
+                    }
+                }
+
+                updatedFiles.Add(newFileName);
+            }
+            catch (Exception ex)
+            {
+                return new Response<List<string>>($"Failed to update file '{oldFileName}': {ex.Message}");
+            }
+        }
+
+        if (!updatedFiles.Any())
+            return new Response<List<string>>("No files were successfully updated.");
+
+        return new Response<List<string>>("Files updated successfully.", updatedFiles);
+    }
+
+
+
 
 
     public Response<bool> DeleteFile(string fileName)

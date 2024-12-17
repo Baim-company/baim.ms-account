@@ -11,5 +11,5 @@ public record UpdateCompanyModel
 
     public List<Guid> TypeOfActivityIds { get; set; } = new List<Guid>();
 
-    public string Logo { get; set; } = string.Empty;
+    public string LogoImagePath { get; set; } = string.Empty;
 }

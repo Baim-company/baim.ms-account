@@ -10,7 +10,6 @@ namespace PersonalAccount.API.Models.Entities.Agiles.Projects;
 public class Project
 {
     public Guid Id { get; set; }
-    public string? Id1C { get; set; }
     public string Name { get; set; }
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow.AddHours(4);
     public DateTime FinishDate { get; set; } = DateTime.UtcNow.AddHours(4);
@@ -34,17 +33,9 @@ public class Project
     public Staff ProjectManager { get; set; }
 
 
-
-    [JsonIgnore]
-    public byte[]? DesignTheme { get; set; }
-    public string DesignThemeImageType { get; set; } = "data:image/jpeg;base64,";
-    public string DesignThemeCombinedImage => $"{DesignThemeImageType}{Convert.ToBase64String(DesignTheme!)}";
-
-
-    [JsonIgnore]
-    public byte[]? Avatar { get; set; }
-    public string AvatarImageType { get; set; } = "data:image/png;base64,";
-    public string AvatarCombinedImage => $"{AvatarImageType}{Convert.ToBase64String(Avatar!)}";
+    
+    public string DesignThemeImagePath { get; set; }
+    public string ProjectAvatarImagePath { get; set; } 
 
 
 
@@ -61,7 +52,6 @@ public class Project
     public ICollection<ProjectTask>? ProjectTasks { get; set; }
 
 
-    // Участники Айхан Диана Кямал Фидан Медина 
     public List<ProjectUser> ProjectUsers { get; set; }
 
 
@@ -85,7 +75,6 @@ public class Project
     {
         Id = Guid.NewGuid();
 
-        Id1C = projectModel.Id1C;
         Name = projectModel.Name;
         Description = projectModel.Description;
 
@@ -96,23 +85,12 @@ public class Project
         FinishDate = projectModel.FinishDate;
         ProjectType = projectModel.ProjectType;
 
-        if (!string.IsNullOrEmpty(projectModel.AvatarImage))
-        {
-            Avatar = Convert.FromBase64String(projectModel.AvatarImage.Split(',')[1]);
-            AvatarImageType = projectModel.AvatarImage.Split(',')[0] + ",";
-        }
-        if (!string.IsNullOrEmpty(projectModel.DesignThemeImage))
-        {
-            DesignTheme = Convert.FromBase64String(projectModel.DesignThemeImage.Split(',')[1]);
-            DesignThemeImageType = projectModel.DesignThemeImage.Split(',')[0] + ",";
-        }
+        ProjectAvatarImagePath = projectModel.ProjectAvatarImagePath;
+        DesignThemeImagePath = projectModel.DesignThemeImagePath;
 
-        if (projectModel.ProjectType == ProjectType.External)
-        {
-            CompanyId = projectModel.CompanyId;
-        }
+
+        if (projectModel.ProjectType == ProjectType.External) CompanyId = projectModel.CompanyId;
         else projectModel.ProjectClients = null;
-
 
         if ((projectModel.ProjectStaffs == null || projectModel.ProjectStaffs.Count == 0)
             && (projectModel.ProjectClients == null || projectModel.ProjectClients.Count == 0))

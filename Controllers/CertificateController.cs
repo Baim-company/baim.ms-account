@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using PersonalAccount.API.Models.Dtos.Staffs;
+﻿using PersonalAccount.API.Models.Entities.Staffs;
 using PersonalAccount.API.Services.Abstractions;
+using PersonalAccount.API.Models.Dtos.Staffs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
 
 namespace PersonalAccount.API.Controllers;
+
 [ApiController]
 [Route("[controller]")]
 public class CertificateController : ControllerBase
@@ -17,7 +20,7 @@ public class CertificateController : ControllerBase
 
 
     [HttpGet("Certificates/Staff/{staffId}")]
-    public async Task<IActionResult> Certificates(Guid staffId)
+    public async Task<ActionResult<List<Certificate>>> Certificates(Guid staffId)
     {
         var response = await _certificateService.GetCertificatesAsync(staffId);
 
@@ -25,7 +28,7 @@ public class CertificateController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> Certificate(Guid id)
+    public async Task<ActionResult<Certificate>> Certificate(Guid id)
     {
         var response = await _certificateService.GetCertificateAsync(id);
 
@@ -33,9 +36,9 @@ public class CertificateController : ControllerBase
     }
 
 
-    //[Authorize(Policy = "StaffOnly")]
+    [Authorize(Policy = "AdminAndStaffOnly")]
     [HttpPost("Create")]
-    public async Task<IActionResult> Add([FromHeader]Guid staffId, [FromBody] List<CertificateModel> certificateModels)
+    public async Task<ActionResult<string>> Add([FromHeader]Guid staffId, [FromBody] List<CertificateModel> certificateModels)
     {
         var result = await _certificateService.AddCertificatesAsync(staffId, certificateModels);
         if (result.Data == null) return BadRequest(result.Message);
@@ -44,9 +47,9 @@ public class CertificateController : ControllerBase
     }
 
 
-    //[Authorize(Policy = "StaffOnly")]
+    [Authorize(Policy = "AdminAndStaffOnly")]
     [HttpPut("Update")]
-    public async Task<IActionResult> Update([FromBody] List<UpdateCertificateModel> certificateModels)
+    public async Task<ActionResult<string>> Update([FromBody] List<UpdateCertificateModel> certificateModels)
     {
         var result = await _certificateService.UpdateCertificatesAsync(certificateModels);
         if (result.Data == null) return BadRequest(result.Message);
@@ -56,9 +59,9 @@ public class CertificateController : ControllerBase
 
 
 
-    //[Authorize(Policy = "StaffOnly")]
+    [Authorize(Policy = "AdminAndStaffOnly")]
     [HttpDelete("Delete")]
-    public async Task<IActionResult> Delete([FromHeader] Guid id)
+    public async Task<ActionResult<string>> Delete([FromHeader] Guid id)
     {
         var result = await _certificateService.DeleteCertificatesAsync(id);
         if (result.Data == null) return BadRequest(result.Message);

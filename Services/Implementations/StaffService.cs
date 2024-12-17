@@ -7,6 +7,7 @@ using PersonalAccount.API.Models.Dtos.Clients;
 using PersonalAccount.API.Models.Dtos.Responses;
 using PersonalAccount.API.Models.Dtos.Staffs;
 using PersonalAccount.API.Models.Entities.Agiles.Projects;
+using PersonalAccount.API.Models.Entities.Clients;
 using PersonalAccount.API.Models.Entities.Staffs;
 using PersonalAccount.API.Models.Entities.Users;
 using PersonalAccount.API.Services.Abstractions;
@@ -15,20 +16,38 @@ namespace PersonalAccount.API.Services.Implementations;
 
 public class StaffService : IStaffService
 {
+
+    private readonly string _baseImageUrl;
+    private readonly IFileService _fileService;
     private readonly AgileDbContext _agileDbContext;
 
-    public StaffService(AgileDbContext agileDbContext)
+    public StaffService(AgileDbContext agileDbContext,
+        IConfiguration configuration,
+        IFileService fileService)
     {
+        _fileService = fileService;
         _agileDbContext = agileDbContext;
+        _baseImageUrl = configuration["BaseImageUrl"]
+            ?? throw new Exception("BaseImageUrl is not configured");
     }
 
 
 
     public async Task<Response<Staff>> GetStaffAsync(Guid id)
     {
-        var staff = await _agileDbContext.Staff.FindAsync(id);
+        var staff = await _agileDbContext.Staff
+            .Include(s => s.User)
+            .Include(s => s.StaffImages)
+            .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (staff == null) throw new PersonalAccountException(PersonalAccountErrorType.StaffNotFound, $"Staff with this id: {id} doesn't exist!");
+        if (staff == null) 
+            throw new PersonalAccountException(PersonalAccountErrorType.StaffNotFound, $"Staff with this id: {id} doesn't exist!");
+
+        staff.User.AvatarPath = $"{_baseImageUrl}/{staff.User.AvatarPath}".Replace("\\", "/");
+        foreach (var staffImage in staff.StaffImages)
+        {
+            staffImage.ImagePath = $"{_baseImageUrl}/{staffImage.ImagePath}".Replace("\\", "/");
+        }
 
         return new Response<Staff>($"Successfully received", staff);
     }
@@ -99,7 +118,8 @@ public class StaffService : IStaffService
     {
         var userExist = await _agileDbContext.Users.FindAsync(externalUserDto.Id);
         if (userExist != null)
-            throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, $"Error! There are already exist user with user id: {externalUserDto.Id}");
+            throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, 
+                $"Error! There are already exist user with user id: {externalUserDto.Id}");
 
 
         var staffExist = await _agileDbContext.Staff
@@ -107,7 +127,8 @@ public class StaffService : IStaffService
             .Where(s => s.UserId == externalUserDto.Id)
             .FirstOrDefaultAsync();
         if (staffExist != null)
-            throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, $"Error! Staff with this user id: {externalUserDto.Id} already exist!");
+            throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, 
+                $"Error! Staff with this user id: {externalUserDto.Id} already exist!");
 
 
         User user = new User(externalUserDto);
@@ -136,7 +157,8 @@ public class StaffService : IStaffService
             .Where(c => c.UserId == updatePosition.Id)
             .FirstOrDefaultAsync();
         if (staff == null) 
-            throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, $"Error!\nStaff with user id: {updatePosition.Id} doesn't exist!");
+            throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, 
+                $"Error!\nStaff with user id: {updatePosition.Id} doesn't exist!");
 
         await _agileDbContext.Users
             .Where(u => u.Id == updatePosition.Id)
@@ -156,13 +178,14 @@ public class StaffService : IStaffService
             .Where(c => c.UserId == updateUserModel.Id)
             .FirstOrDefaultAsync();
         if (staff == null) 
-            throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, $"Error!\nStaff with user id: {updateUserModel.Id} doesn't exist!");
-
+            throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, 
+                $"Error!\nStaff with user id: {updateUserModel.Id} doesn't exist!");
 
 
         if (staff.User.Email != updateUserModel.Email
             && await _agileDbContext.Users.AnyAsync(u => u.Email == updateUserModel.Email))
-            throw new PersonalAccountException(PersonalAccountErrorType.StaffAlreadyExists, $"Error!\nStaff with email already exist!");
+            throw new PersonalAccountException(PersonalAccountErrorType.StaffAlreadyExists, 
+                $"Error!\nStaff with email already exist!");
 
 
         await _agileDbContext.Users
@@ -186,31 +209,24 @@ public class StaffService : IStaffService
 
     public async Task<Response<Staff>> SetStaffExperienceAsync(Guid id, ushort experience)
     {
-        try
-        {
             var staff = await _agileDbContext.Staff.FindAsync(id);
-            if (staff == null) throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, $"Error!\nStaff with id: {id} doesn't exist!");
+            if (staff == null) throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, 
+                $"Error!\nStaff with id: {id} doesn't exist!");
 
             staff.Experience = experience;
             _agileDbContext.Staff.Update(staff);
             await _agileDbContext.SaveChangesAsync();
 
             return new Response<Staff>("Successfully updated!", staff);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
     }
 
 
 
     public async Task<Response<Staff>> SetIsWorkingOrDismissedAsync(Guid id)
     {
-        try
-        {
             var staff = await _agileDbContext.Staff.FindAsync(id);
-            if (staff == null) throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, $"Error!\nStaff with id: {id} doesn't exist!");
+            if (staff == null) throw new PersonalAccountException(PersonalAccountErrorType.UserNotFound, 
+                $"Error!\nStaff with id: {id} doesn't exist!");
 
             staff.IsDismissed = !staff.IsDismissed;
 
@@ -218,11 +234,6 @@ public class StaffService : IStaffService
             await _agileDbContext.SaveChangesAsync();
 
             return new Response<Staff>("Successfully updated!", staff);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
     }
 
 
@@ -250,7 +261,7 @@ public class StaffService : IStaffService
                         LastName = s.User.Surname,
                         Position = s.User.Position,
                         Experience = s.Experience,
-                        CombinedImage = s.StaffImages?.FirstOrDefault()?.CombinedImage ?? null,
+                        CombinedImage = s.StaffImages?.FirstOrDefault()?.ImagePath ?? null,
                         TotalCompletedProjectsCount = completedProjectsCount,
                         TotalClientsInCompletedProjects = totalClientsCount
                     };
@@ -312,9 +323,9 @@ public class StaffService : IStaffService
                 Position = staff.User.Position ?? "N/A",
                 Experience = staff.Experience,
 
-                CombinedImages = staff.StaffImages?
+                StaffImages = staff.StaffImages?
                     .Where(img => img.IsPageImage)
-                    .Select(img => img.CombinedImage ?? string.Empty)
+                    .Select(img => img.ImagePath)
                     .ToList() ?? new List<string>(),
 
                 CompletedProjectsCount = completedProjectsCount,
@@ -325,7 +336,7 @@ public class StaffService : IStaffService
                     Name = p.Name ?? "No Name",
                     Description = p.Description ?? "No Description",
                     CompanyName = p.Company?.CompanyName ?? "Unknown Company",
-                    CompanyImage = p.Company?.CombinedImage ?? string.Empty
+                    CompanyImage = p.Company?.LogoImagePath ?? string.Empty
                 }).ToList(),
 
                 Sertificates = staff.Certificates?
@@ -336,7 +347,7 @@ public class StaffService : IStaffService
                         GivenTime = c.GivenTime,
                         Deadline = c.Deadline,
                         Link = c.Link ?? string.Empty,
-                        CombinedImage = c.CombinedImage ?? string.Empty
+                        CertificateFilePath = c.CertificateFilePath ?? string.Empty
                     }).ToList() ?? new List<CertificateDetailsDto>()
             };
 
@@ -375,5 +386,4 @@ public class StaffService : IStaffService
 
         return (completedProjectsCount, totalClientsCount);
     }
-
 }

@@ -7,7 +7,7 @@
         public string Surname { get; set; }
         public string Position { get; set; }
         public ushort Experience { get; set; }
-        public List<string> CombinedImages { get; set; } = new List<string>();
+        public List<string> StaffImages { get; set; } = new List<string>();
         public int CompletedProjectsCount { get; set; }
         public int ClientsInCompletedProjectsCount { get; set; }
         public List<ProjectDetailsDto> Projects { get; set; } = new List<ProjectDetailsDto>();

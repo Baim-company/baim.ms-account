@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PersonalAccount.API.Models.Dtos.Staffs;
-using PersonalAccount.API.Services.Abstractions;
+﻿using PersonalAccount.API.Services.Abstractions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace PersonalAccount.API.Controllers;
 
 [ApiController]
-//[Authorize(Policy = "StaffOnly")]
 [Route("[controller]")]
+[Authorize(Policy = "StaffAndAdminOnly")]
 public class StaffImageController : ControllerBase
 {
     private readonly IStaffImagesService _staffImagesService;
@@ -17,9 +17,9 @@ public class StaffImageController : ControllerBase
 
 
     [HttpPost("Add")]
-    public async Task<IActionResult> Add([FromHeader] Guid staffId, [FromBody] List<ImageModel> imageModels)
+    public async Task<ActionResult<string>> Add([FromHeader] Guid staffId, List<IFormFile> files)
     {
-        var result = await _staffImagesService.AddImagesAsync(staffId, imageModels);
+        var result = await _staffImagesService.AddImagesAsync(staffId, files);
         if (result.Data == null) return BadRequest(result.Message);
 
         return Ok(result.Message);
@@ -27,19 +27,40 @@ public class StaffImageController : ControllerBase
 
 
 
-    [HttpPut("Update")]
-    public async Task<IActionResult> Update([FromBody] List<UpdateImageModel> updateImageModels)
+    [HttpPut("UpdateImages")]
+    public async Task<ActionResult<string>> UpdateImages([FromHeader] Guid staffId, List<IFormFile> newFiles)
     {
-        var result = await _staffImagesService.UpdateImagesAsync(updateImageModels);
+        var result = await _staffImagesService.UpdateImagesAsync(staffId,newFiles);
         if (result.Data == null) return BadRequest(result.Message);
 
         return Ok(result.Message);
     }
-     
+
+
+    [HttpPut("UpdateImage")]
+    public async Task<ActionResult<string>> UpdateImage([FromHeader] string lastFileName, IFormFile newFile)
+    {
+        var result = await _staffImagesService.UpdateImageAsync(lastFileName, newFile);
+        if (result.Data == null) return BadRequest(result.Message);
+
+        return Ok(result.Message);
+    }
+
+
+    [HttpPatch("{id:guid}/IsPageImage")]
+    public async Task<ActionResult<string>> UpdateIsPageImage(Guid id)
+    {
+        var result = await _staffImagesService.UpdateIsPageImageAsync(id);
+
+        if (result.Data == null)
+            return BadRequest(result.Message);
+
+        return Ok(result.Message);
+    }
 
 
     [HttpDelete("Delete")]
-    public async Task<IActionResult> Delete([FromHeader] Guid id)
+    public async Task<ActionResult<string>> Delete([FromHeader] Guid id)
     {
         var result = await _staffImagesService.DeleteImageAsync(id);
         if (result.Data == null) return BadRequest(result.Message);

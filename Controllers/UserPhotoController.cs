@@ -38,19 +38,19 @@ public class UserPhotoController : ControllerBase
 
 
     [HttpPut("User/Id/{userId}")]
-    public async Task<IActionResult> UpdateFile(Guid userId, [FromHeader] string imagePath)
+    public async Task<ActionResult<string>> UpdateFile(Guid userId, [FromHeader] string imagePath)
     {
         var result = await _userPhotoService.UpdateFilePathAsync(userId, imagePath);
         if (!result.Data)
             return BadRequest(result.Message);
 
-        return Ok(result);
+        return Ok(result.Message);
     }
 
 
 
     [HttpDelete("User/Id/{userId}")]
-    public async Task<IActionResult> DeleteFile(Guid userId,[FromHeader]string imagePath)
+    public async Task<ActionResult<string>> DeleteFile(Guid userId,[FromHeader]string imagePath)
     {
         var result = await _userPhotoService.DeleteFileAsync(userId,imagePath);
         if (!result.Data)

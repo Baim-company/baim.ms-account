@@ -3,13 +3,12 @@
 namespace PersonalAccount.API.Models.Dtos.Agiles.Projects;
 public record ProjectModel
 {
-    public string Id1C { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 
 
-    public string AvatarImage { get; set; } = string.Empty;
-    public string DesignThemeImage { get; set; } = string.Empty;
+    public string ProjectAvatarImagePath { get; set; } = string.Empty;
+    public string DesignThemeImagePath { get; set; } = string.Empty;
 
 
     public Guid ProductId { get; set; }

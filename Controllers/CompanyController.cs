@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PersonalAccount.API.Models.Dtos;
 using PersonalAccount.API.Models.Dtos.Clients;
+using PersonalAccount.API.Models.Dtos.Responses;
+using PersonalAccount.API.Models.Entities.Clients;
 using PersonalAccount.API.Services.Abstractions;
 
 
@@ -20,11 +22,11 @@ public class CompanyController : ControllerBase
 
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> Company(Guid id)
+    public async Task<ActionResult<Company>> Company(Guid id)
     {
         var response = await _companyService.GetCompanyByIdAsync(id);
 
-        if (response == null) return BadRequest($"Error!Failed to get company with id: {id}!");
+        if (response == null) return NotFound($"Error!Failed to get company with id: {id}!");
 
         return Ok(response);
     }
@@ -32,7 +34,7 @@ public class CompanyController : ControllerBase
 
 
     [HttpGet("Companies")]
-    public async Task<IActionResult> Companies([FromQuery] PaginationParameters paginationParameters,
+    public async Task<ActionResult<PagedResponse<Company>>> Companies([FromQuery] PaginationParameters paginationParameters,
         [FromQuery] string? onSearch = null,
         [FromQuery] string? onFilterProduct = null,
         [FromQuery] string? onFilterTypeOfActivity = null,
@@ -47,12 +49,12 @@ public class CompanyController : ControllerBase
 
     [Authorize(Policy = "UserAdminOnly")]
     [HttpPut("CompleteCompany")]
-    public async Task<IActionResult> CompleteCompany([FromBody] CompanyModel company)
+    public async Task<ActionResult<string>> CompleteCompany([FromBody] CompanyModel company)
     {
         var result = await _companyService.CompleteCompanyAsync(company);
         if (result.Data == null) return BadRequest(result.Message);
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 
 
@@ -60,35 +62,35 @@ public class CompanyController : ControllerBase
 
     [Authorize(Policy = "UserAdminOnly")]
     [HttpPut("Update")]
-    public async Task<IActionResult> Update([FromBody] UpdateCompanyModel updateCompany)
+    public async Task<ActionResult<string>> Update([FromBody] UpdateCompanyModel updateCompany)
     {
         var result = await _companyService.UpdateCompanyDataAsync(updateCompany);
         if (result.Data == null) return BadRequest(result.Message);
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 
 
 
     [Authorize(Policy = "UserAdminOnly")] 
     [HttpPut("SetIsNationalOrPrivate/{id}")]
-    public async Task<IActionResult> SetIsNationalOrPrivate(Guid id)
+    public async Task<ActionResult<string>> SetIsNationalOrPrivate(Guid id)
     {
         var result = await _companyService.SetIsNationalOrPrivateAsync(id);
         if (result.Data == null) return BadRequest(result.Message);
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 
 
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPut("ChangeIsPublic/{id}")]
-    public async Task<IActionResult> ChangeIsPublic(Guid id)
+    public async Task<ActionResult<string>> ChangeIsPublic(Guid id)
     {
         var result = await _companyService.ChangeIsPublicAsync(id);
         if (result.Data == null) return BadRequest(result.Message);
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 }

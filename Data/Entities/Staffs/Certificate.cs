@@ -19,11 +19,7 @@ public class Certificate
     public Guid StaffId { get; set; }
 
 
-    [JsonIgnore]
-    public byte[]? CertificateFile { get; set; } 
-    [JsonIgnore]
-    public string CertificateFileType { get; set; } = "data:image/png;base64,";
-    public string CombinedImage => CertificateFile != null && CertificateFile.Length > 0 ? $"{CertificateFileType}{Convert.ToBase64String(CertificateFile)}" : CertificateFileType;
+    public string CertificateFilePath { get; set; } = "";
 
 
 
@@ -36,11 +32,6 @@ public class Certificate
     {
         Id = Guid.NewGuid();
 
-        if (!string.IsNullOrEmpty(certificateModel.CertificateFileStr))
-        {
-            CertificateFile = Convert.FromBase64String(certificateModel.CertificateFileStr.Split(',')[1]);
-            CertificateFileType = certificateModel.CertificateFileStr.Split(',')[0] + ",";
-        }
         Name = certificateModel.Name;
         Authority = certificateModel.Authority;
         GivenTime = certificateModel.GivenTime;
@@ -49,5 +40,7 @@ public class Certificate
 
         Staff = staff;
         StaffId = staff.Id;
+
+        CertificateFilePath = certificateModel.CertificateFilePath;
     }
 }

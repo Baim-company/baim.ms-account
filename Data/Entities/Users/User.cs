@@ -18,10 +18,11 @@ public class User
     public DateTime? BirthDate { get; set; }
     public string Email { get; set; }
     public string? PersonalEmail { get; set; }
-    public bool EmailConfirmed { get; set; }
 
     public string? PhoneNumber { get; set; }
     public string? BusinessPhoneNumber { get; set; }
+
+    public string AvatarPath { get; set; }
 
 
 
@@ -32,9 +33,7 @@ public class User
     public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
     [JsonIgnore]
     public ICollection<Comment>? Comments { get; set; }
-    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
-    public string AvatarPath { get; set; }
 
 
     [JsonIgnore]
@@ -52,8 +51,6 @@ public class User
     public User()
     {
         Id = Guid.NewGuid();
-        Name = "";
-        Email = "";
     }
     public User(ExternalUserDto externalUserDto)
     {
@@ -64,7 +61,6 @@ public class User
         BirthDate = externalUserDto.BirthDate;
         Gender = externalUserDto.Gender;
 
-        EmailConfirmed = true;
         Email = externalUserDto.Email;
         PersonalEmail = externalUserDto.PersonalEmail;
 

@@ -6,7 +6,6 @@ namespace PersonalAccount.API.Models.Entities.Clients;
 public class Company
 {
     public Guid Id { get; set; }
-    public string? Id1C { get; set; }
 
     public string? CompanyName { get; set; }
     public string? Voen { get; set; }
@@ -29,17 +28,12 @@ public class Company
 
 
 
-    public string CombinedImage => Image != null ? $"{ImageType}{Convert.ToBase64String(Image)}" : string.Empty;
-    [JsonIgnore]
-    public byte[]? Image { get; set; }
-    [JsonIgnore]
-    public string ImageType { get; set; } = "data:image/png;base64,";
+    public string LogoImagePath { get; set; } = "data:image/png;base64,";
 
 
     public Company()
     {
         Id = Guid.NewGuid();
-        Id1C = string.Empty; 
     }
     public Company(CompanyModel companyModel,VoenModel voenModel)
     {
@@ -52,11 +46,6 @@ public class Company
         LegalAddress = voenModel.LegalAddress;
         LegalRepresentative = voenModel.LegalRepresentative;
 
-
-        if (!string.IsNullOrEmpty(companyModel.LogoImage))
-        {
-            Image = Convert.FromBase64String(companyModel.LogoImage.Split(',')[1]);
-            ImageType = companyModel.LogoImage.Split(',')[0] + ",";
-        }
+        LogoImagePath = companyModel.LogoImagePath;
     }
 }

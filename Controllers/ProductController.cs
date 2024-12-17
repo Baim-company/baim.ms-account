@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonalAccount.API.Models.Dtos.Clients;
+using PersonalAccount.API.Models.Entities.Clients;
 using PersonalAccount.API.Services.Abstractions;
 
 namespace PersonalAccount.API.Controllers;
@@ -17,8 +18,8 @@ public class ProductController : ControllerBase
     }
 
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> Product(Guid id)
+    [HttpGet("Product/Id/{id}")]
+    public async Task<ActionResult<Product>> Product(Guid id)
     {
         var result = await _productService.GetProductByIdAsync(id);
 
@@ -31,7 +32,7 @@ public class ProductController : ControllerBase
 
 
     [HttpGet("Products")]
-    public async Task<IActionResult> Products(
+    public async Task<ActionResult<List<Product>>> Products(
         [FromQuery] string? onSearch = null,
         [FromQuery] string? onFilter = null)
     {
@@ -47,13 +48,13 @@ public class ProductController : ControllerBase
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPost("Create")]
-    public async Task<IActionResult> Create([FromBody] ProductModel model)
+    public async Task<ActionResult<string>> Create([FromBody] ProductModel model)
     {
         var result = await _productService.AddProductAsync(model);
 
         if (result.Data == null) return BadRequest($"{result.Message}");
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 
 
@@ -61,7 +62,7 @@ public class ProductController : ControllerBase
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPut("Update")]
-    public async Task<IActionResult> Update([FromBody] UpdateProductModel model)
+    public async Task<ActionResult<string>> Update([FromBody] UpdateProductModel model)
     {
 
         var result = await _productService.UpdateProductAsync(model);
@@ -76,7 +77,7 @@ public class ProductController : ControllerBase
 
     [Authorize(Policy = "AdminOnly")]
     [HttpDelete("Delete")]
-    public async Task<IActionResult> Delete([FromHeader]Guid id)
+    public async Task<ActionResult<string>> Delete([FromHeader]Guid id)
     {
         var result = await _productService.DeleteProductAsync(id);
 

@@ -65,7 +65,6 @@ public class AgileDbContext : DbContext
     public DbSet<ProjectTaskCheckItemFile> ProjectTaskCheckItemFiles { get; set; }
 
     public DbSet<Comment> Comments { get; set; }
-    public DbSet<Notification> Notifications { get; set; }
     public DbSet<CommentFile> CommentFiles { get; set; }
     public DbSet<Reaction> Reactions { get; set; }
     public DbSet<Mention> Mentions { get; set; }
@@ -91,7 +90,6 @@ public class AgileDbContext : DbContext
                     v => (Gender)Enum.Parse(typeof(Gender), v));
 
             entity.Property(u => u.Email).HasMaxLength(80).IsRequired();
-            entity.Property(u => u.EmailConfirmed).HasDefaultValue(false);
             entity.Property(u => u.PersonalEmail).HasMaxLength(80);
 
             entity.Property(u => u.PhoneNumber).HasMaxLength(50);
@@ -148,19 +146,16 @@ public class AgileDbContext : DbContext
         builder.Entity<Product>(entity =>
         {
             entity.HasKey(u => u.Id);
-            entity.Property(u => u.Id1C).IsRequired(false).HasMaxLength(200);
             entity.Property(u => u.Name).IsRequired().HasMaxLength(200);
             entity.Property(u => u.Description).IsRequired();
             entity.Property(u => u.IsPublic).IsRequired();
             entity.Property(u => u.ProductType).IsRequired().HasMaxLength(200);
-            entity.Property(u => u.Image).IsRequired();
-            entity.Property(u => u.ImageType).IsRequired();
+            entity.Property(u => u.ImagePath).IsRequired();
         });
 
         builder.Entity<Company>(entity =>
         {
             entity.HasKey(u => u.Id);
-            entity.Property(u => u.Id1C).IsRequired(false).HasMaxLength(200);
 
             entity.Property(u => u.IsNational);
             entity.Property(u => u.IsPublic).HasDefaultValue(false);
@@ -171,8 +166,7 @@ public class AgileDbContext : DbContext
             entity.Property(u => u.LegalForm);
             entity.Property(u => u.LegalRepresentative);
 
-            entity.Property(u => u.Image);
-            entity.Property(u => u.ImageType);
+            entity.Property(u => u.LogoImagePath);
 
             entity.HasMany(c => c.Clients)
                   .WithOne(c => c.Company)
@@ -201,7 +195,6 @@ public class AgileDbContext : DbContext
         {
             entity.HasKey(op => op.Id);
             entity.Property(op => op.Id).ValueGeneratedOnAdd();
-            entity.Property(c => c.Id1C).IsRequired(false).HasMaxLength(200);
             entity.Property(c => c.Title).IsRequired().HasMaxLength(200);
 
             entity.HasIndex(u => u.Title).IsUnique();
@@ -272,19 +265,6 @@ public class AgileDbContext : DbContext
         });
 
 
-        builder.Entity<Notification>(entity =>
-        {
-            entity.HasKey(n => n.Id);
-            entity.Property(n => n.NotificationText).IsRequired();
-            entity.Property(n => n.CommentText).IsRequired();
-            entity.Property(n => n.SentAt).IsRequired();
-            entity.Property(n => n.SenderId).IsRequired();
-
-            entity.HasOne(n => n.Sender)
-                .WithMany(u => u.Notifications)
-                .HasForeignKey(n => n.SenderId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
         builder.Entity<Reaction>(entity =>
         {
             entity.HasOne(r => r.Comment)
@@ -307,6 +287,7 @@ public class AgileDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+
         builder.Entity<Project>(entity =>
         {
             entity.HasKey(u => u.Id);
@@ -320,10 +301,8 @@ public class AgileDbContext : DbContext
                     v => v.ToString(),
                     v => (ProjectType)Enum.Parse(typeof(ProjectType), v));
 
-            entity.Property(u => u.DesignTheme).IsRequired();
-            entity.Property(u => u.DesignThemeImageType).IsRequired();
-            entity.Property(u => u.Avatar).IsRequired();
-            entity.Property(u => u.AvatarImageType).IsRequired();
+            entity.Property(u => u.DesignThemeImagePath).IsRequired();
+            entity.Property(u => u.ProjectAvatarImagePath).IsRequired();
 
 
 
@@ -614,8 +593,7 @@ public class AgileDbContext : DbContext
             entity.Property(u => u.GivenTime).IsRequired();
             entity.Property(u => u.Deadline).IsRequired();
 
-            entity.Property(u => u.CertificateFile).IsRequired(false);
-            entity.Property(u => u.CertificateFileType).IsRequired(false);
+            entity.Property(u => u.CertificateFilePath).IsRequired(false);
 
 
             entity.HasOne(s => s.Staff)
@@ -627,8 +605,7 @@ public class AgileDbContext : DbContext
         builder.Entity<StaffImage>(entity =>
         {
             entity.HasKey(u => u.Id);
-            entity.Property(u => u.Image).IsRequired(false);
-            entity.Property(u => u.ImageType).IsRequired(false);
+            entity.Property(u => u.ImagePath);
 
             entity.HasOne(u => u.Staff)
                 .WithMany(s => s.StaffImages)
