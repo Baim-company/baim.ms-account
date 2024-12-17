@@ -2,7 +2,6 @@
 public record UserCompanyModel
 {
     public Guid Id { get; set; }
-    public string Id1C { get; set; } = string.Empty;
 
 
     public string CompanyName { get; set; } = string.Empty;

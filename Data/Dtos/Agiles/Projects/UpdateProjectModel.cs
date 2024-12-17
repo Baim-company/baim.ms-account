@@ -1,4 +1,5 @@
 ﻿namespace PersonalAccount.API.Models.Dtos.Agiles.Projects;
+
 public record UpdateProjectModel
 {
     public Guid Id { get; set; } = Guid.NewGuid();

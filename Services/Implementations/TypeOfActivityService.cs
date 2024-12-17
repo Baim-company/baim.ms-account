@@ -1,10 +1,10 @@
 ﻿using Global.Infrastructure.Exceptions.PersonalAccount;
-using Microsoft.EntityFrameworkCore;
-using PersonalAccount.API.Data.DbContexts;
-using PersonalAccount.API.Models.Dtos.Clients;
-using PersonalAccount.API.Models.Dtos.Responses;
 using PersonalAccount.API.Models.Entities.Clients;
+using PersonalAccount.API.Models.Dtos.Responses;
 using PersonalAccount.API.Services.Abstractions;
+using PersonalAccount.API.Data.DbContexts;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace PersonalAccount.API.Services.Implementations;
 
@@ -16,143 +16,106 @@ public class TypeOfActivityService : ITypeOfActivityService
     {
         _agileDbContext = agileDbContext;
     }
-     
+
 
     public async Task<Response<TypeOfActivity>> GetTypeAsync(Guid id)
     {
-        try
-        {
-            var type = await _agileDbContext.TypeOfActivities.FindAsync(id);
+        var type = await _agileDbContext.TypeOfActivities.FindAsync(id);
 
-            if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, $"Error!Failed to get type of activity with id: {id}");
+        if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, $"Error!Failed to get type of activity with id: {id}");
 
-            return new Response<TypeOfActivity>("Succsess!", type);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        return new Response<TypeOfActivity>("Succsess!", type);
     }
 
 
 
-    public async Task<List<TypeOfActivity>> GetTypesAsync()
+    public async Task<List<string>> GetTypesAsync()
     {
-        try
-        {
-            var types = await _agileDbContext.TypeOfActivities
-                .AsNoTracking()
-                .ToListAsync();
+        var types = await _agileDbContext.TypeOfActivities
+            .AsNoTracking()
+            .ToListAsync();
 
-            if (types == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, "Error!Failed to get type of activities");
+        if (types == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, "Error!Failed to get type of activities");
 
-            return types;
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        List<string> typesName = new List<string>();
+        foreach (var type in types)
+            typesName.Add(type.Title);
+
+        return typesName;
     }
 
 
 
-    public async Task<Response<TypeOfActivity>> AddTypeAsync(TypeOfActivityModel typeModel)
+    public async Task<Response<TypeOfActivity>> AddTypeAsync(string title)
     {
-        try
+        var type = await _agileDbContext.TypeOfActivities
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Title == title);
+        if (type != null) return new Response<TypeOfActivity>($"Error!Type of activity: {title} already exist!");
+
+
+        TypeOfActivity typeOfActivity = new(title);
+
+        await _agileDbContext.TypeOfActivities.AddAsync(typeOfActivity);
+        await _agileDbContext.SaveChangesAsync();
+
+        return new Response<TypeOfActivity>("Successfully created!", typeOfActivity);
+    }
+
+
+
+
+    public async Task<Response<List<TypeOfActivity>>> AddTypesRangeAsync(List<string> titles)
+    {
+        List<TypeOfActivity> typeOfActivities = new();
+        foreach (var title in titles)
         {
             var type = await _agileDbContext.TypeOfActivities
                 .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Title == typeModel.Title);
-            if (type != null) return new Response<TypeOfActivity>($"Error!Type of activity: {typeModel.Title} already exist!", null);
+                .FirstOrDefaultAsync(t => t.Title == title);
+            if (type != null) return new Response<List<TypeOfActivity>>($"Error! Failed to create type of activity with title: {title}. Already exist!");
 
-
-            TypeOfActivity typeOfActivity = new(typeModel);
-
-            await _agileDbContext.TypeOfActivities.AddAsync(typeOfActivity);
-            await _agileDbContext.SaveChangesAsync();
-
-            return new Response<TypeOfActivity>("Successfully created!", typeOfActivity);
+            typeOfActivities.Add(new TypeOfActivity(title));
         }
-        catch (Exception)
-        {
-            throw;
-        }
+
+        await _agileDbContext.TypeOfActivities.AddRangeAsync(typeOfActivities);
+        await _agileDbContext.SaveChangesAsync();
+
+        return new Response<List<TypeOfActivity>>("Successfully added .", typeOfActivities);
     }
 
 
 
 
-    public async Task<(List<TypeOfActivity>?, TypeOfActivity?)> AddTypesRangeAsync(List<TypeOfActivityModel> typeModels)
+    public async Task<Response<TypeOfActivity>> UpdateTypeAsync(Guid id, string title)
     {
-        try
-        {
-            List<TypeOfActivity> typeOfActivities = new();
-            foreach (var typeModel in typeModels)
-            {
-                var type = await _agileDbContext.TypeOfActivities
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Title == typeModel.Title);
-                if (type != null) return new(null, type);
+        var type = await _agileDbContext.TypeOfActivities.FindAsync(id);
+        if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound,
+            $"Error!Type of activity with id: {id} doesn't exist!");
 
-                typeOfActivities.Add(new TypeOfActivity(typeModel));
-            }
+        await _agileDbContext.TypeOfActivities
+            .Where(u => u.Id == id)
+            .ExecuteUpdateAsync(u => u
+                .SetProperty(u => u.Title, title));
 
-            await _agileDbContext.TypeOfActivities.AddRangeAsync(typeOfActivities);
-            await _agileDbContext.SaveChangesAsync();
+        await _agileDbContext.SaveChangesAsync();
 
-            return new(typeOfActivities, null);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        return new Response<TypeOfActivity>("Type of activity updated successfully!", new TypeOfActivity());
     }
 
 
-
-
-    public async Task<Response<TypeOfActivity>> UpdateTypeAsync(UpdateTypeOfActivityModel typeModel)
-    {
-        try
-        {
-            var type = await _agileDbContext.TypeOfActivities.FindAsync(typeModel.Id);
-            if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, $"Error!Type of activity with id: {typeModel.Id} doesn't exist!");
-
-            await _agileDbContext.TypeOfActivities
-                .Where(u => u.Id == typeModel.Id)
-                .ExecuteUpdateAsync(u => u
-                    .SetProperty(u => u.Title, typeModel.Title)
-                    .SetProperty(u => u.Id1C, typeModel.Id1C));
-
-            await _agileDbContext.SaveChangesAsync();
-
-            return new Response<TypeOfActivity>("Type of activity updated successfully!", new TypeOfActivity());
-        }
-        catch (Exception)
-        {
-            throw;
-        }
-    }
-
-    
 
     public async Task<Response<TypeOfActivity>> DeleteTypeAsync(Guid id)
     {
-        try
-        {
-            var type = await _agileDbContext.TypeOfActivities.FindAsync(id);
-            if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound, $"Error!Type of activity with id: {id} doesn't exist!");
+        var type = await _agileDbContext.TypeOfActivities.FindAsync(id);
+        if (type == null) throw new PersonalAccountException(PersonalAccountErrorType.TypeOfActivityNotFound,
+            $"Error!Type of activity with id: {id} doesn't exist!");
 
-            await _agileDbContext.TypeOfActivities
-                .Where(v => v.Id == id)
-                .ExecuteDeleteAsync();
-            await _agileDbContext.SaveChangesAsync();
+        await _agileDbContext.TypeOfActivities
+            .Where(v => v.Id == id)
+            .ExecuteDeleteAsync();
+        await _agileDbContext.SaveChangesAsync();
 
-            return new Response<TypeOfActivity>("Successfully deleted!", new TypeOfActivity());
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        return new Response<TypeOfActivity>("Successfully deleted!", new TypeOfActivity());
     }
 }

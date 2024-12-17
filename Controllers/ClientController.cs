@@ -96,12 +96,12 @@ public class ClientController : ControllerBase
 
     [Authorize(Policy = "AdminOnly")]
     [HttpPatch("Clients/{id}/Activate")]
-    public async Task<IActionResult> ActivateClient(Guid id)
+    public async Task<ActionResult<string>> ActivateClient(Guid id)
     {
         var result = await _clientService.UpdateClientActiveStatusAsync(id);
         if (result.Data == null) return BadRequest(result.Message);
 
-        return Ok(result.Data);
+        return Ok(result.Message);
     }
 
 }

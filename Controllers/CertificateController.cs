@@ -27,7 +27,7 @@ public class CertificateController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("Certificate/{id}")]
     public async Task<ActionResult<Certificate>> Certificate(Guid id)
     {
         var response = await _certificateService.GetCertificateAsync(id);

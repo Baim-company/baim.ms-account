@@ -1,8 +1,7 @@
-﻿namespace PersonalAccount.API.Models.Dtos.Agiles.Comments
+﻿namespace PersonalAccount.API.Models.Dtos.Agiles.Comments;
+
+public class UpdateReactionModel
 {
-    public class UpdateReactionModel
-    {
-        public Guid ReactionId { get; set; }
-        public string NewEmoji { get; set; }
-    }
+    public Guid ReactionId { get; set; }
+    public string NewEmoji { get; set; }
 }

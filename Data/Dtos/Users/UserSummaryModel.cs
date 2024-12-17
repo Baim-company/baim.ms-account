@@ -7,7 +7,6 @@ namespace PersonalAccount.API.Models.Dtos.Users;
 public class UserSummaryModel
 {
     public Guid Id { get; set; }
-    public string? Id1C { get; set; }
     public string? Position { get; set; }
 
     public string Name { get; set; }
@@ -35,5 +34,4 @@ public class UserSummaryModel
     [JsonIgnore]
     public string ImageType = "data:image/png;base64,";
     public string CombinedImage => Image.Length > 0 ? $"{ImageType}{Convert.ToBase64String(Image)}" : ImageType;
-
 }

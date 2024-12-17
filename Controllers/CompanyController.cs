@@ -72,9 +72,9 @@ public class CompanyController : ControllerBase
 
 
 
-    [Authorize(Policy = "UserAdminOnly")] 
-    [HttpPut("SetIsNationalOrPrivate/{id}")]
-    public async Task<ActionResult<string>> SetIsNationalOrPrivate(Guid id)
+    [Authorize(Policy = "HighPriorityOnly")]
+    [HttpPatch("Companies/{id}/ToggleNationalStatus")]
+    public async Task<ActionResult<string>> ToggleNationalStatus(Guid id)
     {
         var result = await _companyService.SetIsNationalOrPrivateAsync(id);
         if (result.Data == null) return BadRequest(result.Message);
@@ -83,10 +83,9 @@ public class CompanyController : ControllerBase
     }
 
 
-
-    [Authorize(Policy = "AdminOnly")]
-    [HttpPut("ChangeIsPublic/{id}")]
-    public async Task<ActionResult<string>> ChangeIsPublic(Guid id)
+    [Authorize(Policy = "AdminAndStaffOnly")]
+    [HttpPatch("Companies/{id}/TogglePublicStatus")]
+    public async Task<ActionResult<string>> TogglePublicStatus(Guid id)
     {
         var result = await _companyService.ChangeIsPublicAsync(id);
         if (result.Data == null) return BadRequest(result.Message);

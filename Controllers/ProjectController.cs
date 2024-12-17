@@ -31,7 +31,6 @@ public class ProjectController : ControllerBase
 
 
 
-    //[Authorize(Policy = "AdminAndStaffOnly")]
     [HttpGet("Projects")]
     public async Task<ActionResult<PagedResponse<Project>>> Projects([FromQuery] PaginationParameters paginationParameters
         , [FromQuery] string? onSearch
@@ -72,7 +71,7 @@ public class ProjectController : ControllerBase
 
 
 
-    //[Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "AdminAndStaffOnly")]
     [HttpPost("Create")]
     public async Task<ActionResult<string>> Create([FromBody] ProjectModel projectModel)
     {
@@ -85,7 +84,7 @@ public class ProjectController : ControllerBase
 
 
 
-    //[Authorize(Policy = "AdminAndStaffOnly")]
+    [Authorize(Policy = "AdminAndStaffOnly")]
     [HttpPut("Update")]
     public async Task<ActionResult<string>> Update([FromBody] UpdateProjectModel projectModel)
     {
@@ -96,10 +95,9 @@ public class ProjectController : ControllerBase
     }
 
 
-    
-    //[Authorize(Policy = "AdminAndStaffOnly")]
-    [HttpPut("Complete")]
-    public async Task<ActionResult<string>> Complete([FromHeader] Guid id)
+    [Authorize(Policy = "AdminAndStaffOnly")]
+    [HttpPatch("Projects/{id}/MarkAsCompleted")]
+    public async Task<ActionResult<string>> MarkAsCompleted([FromHeader] Guid id)
     {
         var result = await _projectService.CompleteProjectAsync(id);
         if (result.Data == null) return BadRequest(result.Message);
@@ -108,10 +106,9 @@ public class ProjectController : ControllerBase
     }
 
 
-
-    //[Authorize(Policy = "AdminOnly")]
-    [HttpPut("MakePublic")]
-    public async Task<ActionResult<string>> MakePublic([FromHeader] Guid id)
+    [Authorize(Policy = "AdminOnly")]
+    [HttpPatch("Projects/{id}/SetPublicStatus")]
+    public async Task<ActionResult<string>> SetPublicStatus([FromHeader] Guid id)
     {
         var result = await _projectService.MakeProjectPublicAsync(id);
         if (result.Data == null) return BadRequest(result.Message);
@@ -120,9 +117,9 @@ public class ProjectController : ControllerBase
     }
 
 
-    
 
-    //[Authorize(Policy = "AdminAndStaffOnly")]
+
+    [Authorize(Policy = "AdminAndStaffOnly")]
     [HttpDelete("Delete")]
     public async Task<ActionResult<string>> Delete([FromHeader]Guid id)
     {
