@@ -29,7 +29,8 @@ public class StaffImagesService : IStaffImagesService
     public async Task<Response<StaffImage>> AddImagesAsync(Guid staffId, List<IFormFile> files)
     {
         var staff = await _agileDbContext.Staff.FindAsync(staffId);
-        if (staff == null) throw new PersonalAccountException(PersonalAccountErrorType.StaffNotFound, $"Error!\nStaff with id: {staffId} doesn't exist!");
+        if (staff == null) throw new PersonalAccountException(PersonalAccountErrorType.StaffNotFound, 
+            $"Error!\nStaff with id: {staffId} doesn't exist!");
 
 
         var result = await _fileService.CreateFilesAsync(files);
@@ -131,21 +132,21 @@ public class StaffImagesService : IStaffImagesService
     }
 
 
-    public async Task<Response<StaffImage>> UpdateIsPageImageAsync(Guid staffImageId)
-    {
-        var staffImage = await _agileDbContext.StaffImages.FindAsync(staffImageId);
+    //public async Task<Response<StaffImage>> UpdateIsPageImageAsync(Guid staffImageId)
+    //{
+    //    var staffImage = await _agileDbContext.StaffImages.FindAsync(staffImageId);
 
-        if (staffImage == null)
-            throw new PersonalAccountException(PersonalAccountErrorType.StaffNotFound,
-                $"Error! Staff image with staff image id: {staffImageId} doesn't exist");
+    //    if (staffImage == null)
+    //        throw new PersonalAccountException(PersonalAccountErrorType.StaffNotFound,
+    //            $"Error! Staff image with staff image id: {staffImageId} doesn't exist");
 
-        await _agileDbContext.StaffImages
-            .Where(si => si.Id == staffImageId)
-            .ExecuteUpdateAsync(si => si
-                .SetProperty(si => si.IsPageImage, si => !si.IsPageImage));
+    //    await _agileDbContext.StaffImages
+    //        .Where(si => si.Id == staffImageId)
+    //        .ExecuteUpdateAsync(si => si
+    //            .SetProperty(si => si.IsPageImage, si => !si.IsPageImage));
 
-        var updatedStaffImage = await _agileDbContext.StaffImages.FindAsync(staffImageId);
+    //    var updatedStaffImage = await _agileDbContext.StaffImages.FindAsync(staffImageId);
 
-        return new Response<StaffImage>("IsPageImage successfully updated.", updatedStaffImage);
-    }
+    //    return new Response<StaffImage>("IsPageImage successfully updated.", updatedStaffImage);
+    //}
 }

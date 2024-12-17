@@ -47,20 +47,20 @@ public class StaffImageController : ControllerBase
     }
 
 
-    [HttpPatch("{id:guid}/IsPageImage")]
-    public async Task<ActionResult<string>> UpdateIsPageImage(Guid id)
-    {
-        var result = await _staffImagesService.UpdateIsPageImageAsync(id);
+    //[HttpPatch("{id:guid}/IsPageImage")]
+    //public async Task<ActionResult<string>> UpdateIsPageImage(Guid id)
+    //{
+    //    var result = await _staffImagesService.UpdateIsPageImageAsync(id);
 
-        if (result.Data == null)
-            return BadRequest(result.Message);
+    //    if (result.Data == null)
+    //        return BadRequest(result.Message);
 
-        return Ok(result.Message);
-    }
+    //    return Ok(result.Message);
+    //}
 
 
-    [HttpDelete("Delete")]
-    public async Task<ActionResult<string>> Delete([FromHeader] Guid id)
+    [HttpDelete("Delete/{id:guid}")]
+    public async Task<ActionResult<string>> Delete(Guid id)
     {
         var result = await _staffImagesService.DeleteImageAsync(id);
         if (result.Data == null) return BadRequest(result.Message);

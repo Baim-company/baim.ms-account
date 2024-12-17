@@ -9,7 +9,7 @@ public interface IStaffImagesService
 
     Task<Response<List<StaffImage>>> UpdateImagesAsync(Guid staffId, List<IFormFile> newFiles);
     Task<Response<StaffImage>> UpdateImageAsync(string lastFileName, IFormFile newFile);
-    Task<Response<StaffImage>> UpdateIsPageImageAsync(Guid staffImageId);
+    //Task<Response<StaffImage>> UpdateIsPageImageAsync(Guid staffImageId);
 
     Task<Response<StaffImage>> DeleteImageAsync(Guid id);
 }

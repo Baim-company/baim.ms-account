@@ -41,7 +41,8 @@ public class StaffService : IStaffService
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (staff == null) 
-            throw new PersonalAccountException(PersonalAccountErrorType.StaffNotFound, $"Staff with this id: {id} doesn't exist!");
+            throw new PersonalAccountException(PersonalAccountErrorType.StaffNotFound, 
+                $"Staff with this id: {id} doesn't exist!");
 
         staff.User.AvatarPath = $"{_baseImageUrl}/{staff.User.AvatarPath}".Replace("\\", "/");
         foreach (var staffImage in staff.StaffImages)
@@ -58,6 +59,8 @@ public class StaffService : IStaffService
     public async Task<PagedResponse<Staff>> GetFilteredStaffAsync(PaginationParameters paginationParameters, string? orFilter, string? orPosition)
     {
         var staffQuery = _agileDbContext.Staff
+            .Include(c => c.Certificates)
+            .Include(c => c.StaffImages)
             .Include(c => c.User)
             .ThenInclude(u => u.UserRoles)
             .ThenInclude(r => r.Role)
@@ -108,6 +111,14 @@ public class StaffService : IStaffService
         foreach (var staff in paginatedStaff)
         {
             staff.User.AvatarPath = $"{_baseImageUrl}/{staff.User.AvatarPath}".Replace("\\", "/");
+            foreach (var staffIamge in staff.StaffImages)
+            {
+                staffIamge.ImagePath = $"{_baseImageUrl}/{staffIamge.ImagePath}".Replace("\\", "/");
+            }
+            foreach (var staffCert in staff.Certificates)
+            {
+                staffCert.CertificateFilePath = $"{_baseImageUrl}/{staffCert.CertificateFilePath}".Replace("\\", "/");
+            }
         }
 
         return new PagedResponse<Staff>(paginatedStaff, paginationParameters.PageNumber, paginationParameters.PageSize, totalRecords);
@@ -300,7 +311,7 @@ public class StaffService : IStaffService
         {
             var staff = await _agileDbContext.Staff
                 .Include(s => s.User)
-                .Include(s => s.StaffImages.Where(img => img.IsPageImage))
+                .Include(s => s.StaffImages)
                 .Include(s => s.MyManageProjects)
                     .ThenInclude(p => p.Company)
                 .Include(s => s.ProjectUsers)
@@ -342,7 +353,6 @@ public class StaffService : IStaffService
                 Experience = staff.Experience,
 
                 StaffImages = staff.StaffImages?
-                    .Where(img => img.IsPageImage)
                     .Select(img => img.ImagePath)
                     .ToList() ?? new List<string>(),
 

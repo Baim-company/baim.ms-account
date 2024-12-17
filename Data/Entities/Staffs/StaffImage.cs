@@ -5,7 +5,6 @@ namespace PersonalAccount.API.Models.Entities.Staffs;
 public class StaffImage
 {
     public Guid Id { get; set; }
-    public bool IsPageImage { get; set; }
     public string ImagePath { get; set; }
 
 
