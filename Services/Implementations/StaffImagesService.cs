@@ -25,6 +25,12 @@ public class StaffImagesService : IStaffImagesService
     }
 
 
+    public async Task<List<StaffImage>> GetAll()
+    {
+        var imgs = await _agileDbContext.StaffImages.ToListAsync();
+
+        return imgs;
+    }
 
     public async Task<Response<StaffImage>> AddImagesAsync(Guid staffId, List<IFormFile> files)
     {
@@ -130,23 +136,4 @@ public class StaffImagesService : IStaffImagesService
 
         return new Response<StaffImage>("Images successfully updated", staffImage);
     }
-
-
-    //public async Task<Response<StaffImage>> UpdateIsPageImageAsync(Guid staffImageId)
-    //{
-    //    var staffImage = await _agileDbContext.StaffImages.FindAsync(staffImageId);
-
-    //    if (staffImage == null)
-    //        throw new PersonalAccountException(PersonalAccountErrorType.StaffNotFound,
-    //            $"Error! Staff image with staff image id: {staffImageId} doesn't exist");
-
-    //    await _agileDbContext.StaffImages
-    //        .Where(si => si.Id == staffImageId)
-    //        .ExecuteUpdateAsync(si => si
-    //            .SetProperty(si => si.IsPageImage, si => !si.IsPageImage));
-
-    //    var updatedStaffImage = await _agileDbContext.StaffImages.FindAsync(staffImageId);
-
-    //    return new Response<StaffImage>("IsPageImage successfully updated.", updatedStaffImage);
-    //}
 }

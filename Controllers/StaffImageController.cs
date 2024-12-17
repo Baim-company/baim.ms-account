@@ -1,6 +1,10 @@
 ﻿using PersonalAccount.API.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PersonalAccount.API.Models.Entities.Staffs;
+using PersonalAccount.API.Models.Dtos.Responses;
+using PersonalAccount.API.Models.Dtos;
+using PersonalAccount.API.Services.Implementations;
 
 namespace PersonalAccount.API.Controllers;
 
@@ -13,6 +17,16 @@ public class StaffImageController : ControllerBase
     public StaffImageController(IStaffImagesService staffImagesService)
     {
         _staffImagesService = staffImagesService;
+    }
+
+
+
+    [HttpGet("All")]
+    public async Task<ActionResult<List<StaffImage>>> All()
+    {
+        var staffs = await _staffImagesService.GetAll();
+
+        return Ok(staffs);
     }
 
 
@@ -46,17 +60,6 @@ public class StaffImageController : ControllerBase
         return Ok(result.Message);
     }
 
-
-    //[HttpPatch("{id:guid}/IsPageImage")]
-    //public async Task<ActionResult<string>> UpdateIsPageImage(Guid id)
-    //{
-    //    var result = await _staffImagesService.UpdateIsPageImageAsync(id);
-
-    //    if (result.Data == null)
-    //        return BadRequest(result.Message);
-
-    //    return Ok(result.Message);
-    //}
 
 
     [HttpDelete("Delete/{id:guid}")]
