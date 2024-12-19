@@ -18,6 +18,7 @@ public class StaffService : IStaffService
 {
 
     private readonly string _baseImageUrl;
+    private readonly string _adminEmail;
     private readonly IFileService _fileService;
     private readonly AgileDbContext _agileDbContext;
 
@@ -29,6 +30,8 @@ public class StaffService : IStaffService
         _agileDbContext = agileDbContext;
         _baseImageUrl = configuration["BaseImageUrl"]
             ?? throw new Exception("BaseImageUrl is not configured");
+        _adminEmail = configuration["AdminSettings:Email"]
+    ?? throw new Exception("Admin email is not configured");
     }
 
 
@@ -264,9 +267,9 @@ public class StaffService : IStaffService
         {
             var staffList = await _agileDbContext.Staff
                 .Include(s => s.User)
-                .Where(s => s.User.Email != "admin@gmail.com" && !s.IsDismissed) 
+                .Where(s => s.User.Email != _adminEmail && !s.IsDismissed)
                 .Include(s => s.MyManageProjects)
-                .Include(s => s.ProjectUsers)
+                .Include(s => s.ProjectUsers!)
                 .ThenInclude(pu => pu.Project)
                 .Include(s => s.StaffImages)
                 .ToListAsync();
@@ -274,21 +277,27 @@ public class StaffService : IStaffService
             var staffSummaries = staffList
                 .Select(s =>
                 {
+                    var firstImagePath = s.StaffImages?.FirstOrDefault()?.ImagePath;
+                    var imagePath = firstImagePath != null
+                        ? $"{_baseImageUrl}/{firstImagePath}".Replace("\\", "/")
+                        : null;
+
                     var (completedProjectsCount, totalClientsCount) = CalculateCompletedProjectsAndClients(s);
+
                     return new StaffSummaryDto
                     {
                         Id = s.Id,
-                        FirstName = s.User.Name,
-                        LastName = s.User.Surname,
-                        Position = s.User.Position,
+                        FirstName = s.User?.Name ?? "N/A",
+                        LastName = s.User?.Surname ?? "N/A",
+                        Position = s.User?.Position ?? "N/A",
                         Experience = s.Experience,
-                        CombinedImage = s.StaffImages?.FirstOrDefault()?.ImagePath ?? null,
+                        ImagePath = imagePath,
                         TotalCompletedProjectsCount = completedProjectsCount,
                         TotalClientsInCompletedProjects = totalClientsCount
                     };
                 })
-                .OrderByDescending(s => s.Experience)
-                .ToList();
+            .OrderByDescending(s => s.Experience)
+            .ToList();
 
             return new Response<List<StaffSummaryDto>>("Success", staffSummaries);
         }
@@ -312,9 +321,9 @@ public class StaffService : IStaffService
             var staff = await _agileDbContext.Staff
                 .Include(s => s.User)
                 .Include(s => s.StaffImages)
-                .Include(s => s.MyManageProjects)
+                .Include(s => s.MyManageProjects!)
                     .ThenInclude(p => p.Company)
-                .Include(s => s.ProjectUsers)
+                .Include(s => s.ProjectUsers!)
                     .ThenInclude(pu => pu.Project)
                     .ThenInclude(p => p.Company)
                 .Include(s => s.Certificates)
@@ -324,6 +333,32 @@ public class StaffService : IStaffService
             if (staff == null || staff.User == null)
             {
                 return new Response<StaffDetailsDto>("Staff not found.");
+            }
+
+            foreach (var image in staff.StaffImages)
+            {
+                image.ImagePath = $"{_baseImageUrl}/{image.ImagePath}".Replace("\\", "/");
+            }
+
+            foreach (var cert in staff.Certificates)
+            {
+                cert.CertificateFilePath = $"{_baseImageUrl}/{cert.CertificateFilePath}".Replace("\\", "/");
+            }
+
+            foreach (var project in staff.MyManageProjects ?? new List<Project>())
+            {
+                if (project.Company != null && !string.IsNullOrEmpty(project.Company.LogoImagePath))
+                {
+                    project.Company.LogoImagePath = $"{_baseImageUrl}/{project.Company.LogoImagePath}".Replace("\\", "/");
+                }
+            }
+
+            foreach (var projectUser in staff.ProjectUsers ?? new List<ProjectUser>())
+            {
+                if (projectUser.Project?.Company != null && !string.IsNullOrEmpty(projectUser.Project.Company.LogoImagePath))
+                {
+                    projectUser.Project.Company.LogoImagePath = $"{_baseImageUrl}/{projectUser.Project.Company.LogoImagePath}".Replace("\\", "/");
+                }
             }
 
             var managedProjects = staff.MyManageProjects?
@@ -367,7 +402,7 @@ public class StaffService : IStaffService
                     CompanyImage = p.Company?.LogoImagePath ?? string.Empty
                 }).ToList(),
 
-                Sertificates = staff.Certificates?
+                Ñertificates = staff.Certificates?
                     .Select(c => new CertificateDetailsDto
                     {
                         Name = c.Name ?? "No Name",
@@ -375,7 +410,7 @@ public class StaffService : IStaffService
                         GivenTime = c.GivenTime,
                         Deadline = c.Deadline,
                         Link = c.Link ?? string.Empty,
-                        CertificateFilePath = c.CertificateFilePath ?? string.Empty
+                        CertificateFilePath = c.CertificateFilePath
                     }).ToList() ?? new List<CertificateDetailsDto>()
             };
 
@@ -386,6 +421,7 @@ public class StaffService : IStaffService
             return new Response<StaffDetailsDto>($"Failed to retrieve staff details: {ex.Message}");
         }
     }
+
 
 
 

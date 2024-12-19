@@ -7,7 +7,7 @@ public class StaffSummaryDto
     public string LastName { get; set; }
     public string Position { get; set; }
     public ushort Experience { get; set; }
-    public string CombinedImage { get; set; } 
+    public string ImagePath { get; set; } 
     public int TotalCompletedProjectsCount { get; set; }
     public int TotalClientsInCompletedProjects { get; set; }
 }

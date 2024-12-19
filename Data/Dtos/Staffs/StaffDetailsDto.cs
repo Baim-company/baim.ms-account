@@ -11,5 +11,5 @@ public class StaffDetailsDto
     public int CompletedProjectsCount { get; set; }
     public int ClientsInCompletedProjectsCount { get; set; }
     public List<ProjectDetailsDto> Projects { get; set; } = new List<ProjectDetailsDto>();
-    public List<CertificateDetailsDto> Sertificates { get; set; } = new List<CertificateDetailsDto>();
+    public List<CertificateDetailsDto> Сertificates { get; set; } = new List<CertificateDetailsDto>();
 }
