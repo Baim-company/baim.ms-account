@@ -402,7 +402,7 @@ public class StaffService : IStaffService
                     CompanyImage = p.Company?.LogoImagePath ?? string.Empty
                 }).ToList(),
 
-                Ñertificates = staff.Certificates?
+                Ñertificates = staff.Certificates
                     .Select(c => new CertificateDetailsDto
                     {
                         Name = c.Name ?? "No Name",
