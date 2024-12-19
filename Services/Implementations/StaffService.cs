@@ -321,9 +321,9 @@ public class StaffService : IStaffService
             var staff = await _agileDbContext.Staff
                 .Include(s => s.User)
                 .Include(s => s.StaffImages)
-                .Include(s => s.MyManageProjects)
+                .Include(s => s.MyManageProjects!)
                     .ThenInclude(p => p.Company)
-                .Include(s => s.ProjectUsers)
+                .Include(s => s.ProjectUsers!)
                     .ThenInclude(pu => pu.Project)
                     .ThenInclude(p => p.Company)
                 .Include(s => s.Certificates)
