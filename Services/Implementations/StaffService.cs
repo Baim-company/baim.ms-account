@@ -388,7 +388,7 @@ public class StaffService : IStaffService
                 Position = staff.User.Position ?? "N/A",
                 Experience = staff.Experience,
 
-                StaffImages = staff.StaffImages?
+                StaffImages = staff.StaffImages
                     .Select(img => img.ImagePath)
                     .ToList() ?? new List<string>(),
 
@@ -399,8 +399,8 @@ public class StaffService : IStaffService
                 {
                     Name = p.Name ?? "No Name",
                     Description = p.Description ?? "No Description",
-                    CompanyName = p.Company?.CompanyName ?? "Unknown Company",
-                    CompanyImage = p.Company?.LogoImagePath ?? string.Empty
+                    CompanyName = p.Company.CompanyName ?? "Unknown Company",
+                    CompanyImage = p.Company.LogoImagePath ?? string.Empty
                 }).ToList(),
 
                 Ñertificates = staff.Certificates
